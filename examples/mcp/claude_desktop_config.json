@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "tarifftrust": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://api.tarifftrust.com/mcp/",
+        "--header",
+        "Authorization: Bearer ${TARIFFTRUST_API_KEY}"
+      ],
+      "env": {
+        "TARIFFTRUST_API_KEY": "tarifftrust_..."
+      }
+    }
+  }
+}

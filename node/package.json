@@ -1,0 +1,61 @@
+{
+  "name": "tarifftrust",
+  "version": "0.1.0",
+  "description": "Official Node.js and TypeScript client for the TariffTrust API: every US import duty and fee for an HTS code, an origin and a value, each with its official source.",
+  "keywords": [
+    "tariff",
+    "tariffs",
+    "hts",
+    "harmonized-tariff-schedule",
+    "customs",
+    "import-duty",
+    "landed-cost",
+    "section-301",
+    "section-232",
+    "trade-compliance",
+    "api-client",
+    "typescript"
+  ],
+  "homepage": "https://tarifftrust.com/api/",
+  "bugs": "https://github.com/tarifftrust/tarifftrust/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tarifftrust/tarifftrust.git",
+    "directory": "node"
+  },
+  "license": "MIT",
+  "author": "TariffTrust <contact@tarifftrust.com>",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/mark-cjs.mjs",
+    "test": "npm run build && tsc -p tsconfig.test.json && node --test test/client.test.mjs test/require.test.cjs",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

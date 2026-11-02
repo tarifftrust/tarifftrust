@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "tarifftrust": {
+      "url": "https://api.tarifftrust.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${env:TARIFFTRUST_API_KEY}"
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+# Each day, the contract the API serves against the one the packages were generated from. A failure
+# means the API changed: run python scripts/generate.py --sync, commit, and publish a new version.
+name: contract
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  live:
+    name: openapi.json is the contract the API serves
+    runs-on: ubuntu-latest
+    steps:
+      # GitHub turns a schedule off after 60 days without a commit: this one stays on.
+      - run: gh workflow enable contract.yml --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: python scripts/generate.py --live
