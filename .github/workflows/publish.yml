@@ -1,6 +1,5 @@
 # A tag v1.2.3 publishes both packages at that version, without a stored token: PyPI and npm trust
-# this workflow and its environments. NPM_TOKEN serves only the very first npm publish, since npm
-# trusts a workflow only for a package that exists; the secret is deleted right after.
+# this workflow and its environments.
 name: publish
 
 on:
@@ -70,5 +69,3 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
       - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
