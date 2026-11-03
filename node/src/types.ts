@@ -324,8 +324,8 @@ export interface CalculationResult {
    */
   policies?: Record<string, unknown>[];
   /**
-   * What an exact replay needs: the engine result's checksum, the request as the engine read
-   * it, the incidents and notices applied, and the image of the engine.
+   * What identifies this result for a replay: the engine result's checksum, the request as the
+   * engine read it, the legal end of its publication and the image of the engine.
    */
   provenance?: Record<string, unknown> | null;
   /**
@@ -673,8 +673,8 @@ export interface EntryResult {
    */
   policies?: Record<string, unknown>[];
   /**
-   * What an exact replay needs: the engine result's checksum, the request as the engine read
-   * it, the incidents and notices applied, and the image of the engine.
+   * What identifies this result for a replay: the engine result's checksum, the request as the
+   * engine read it, the legal end of its publication and the image of the engine.
    */
   provenance?: Record<string, unknown> | null;
   /**

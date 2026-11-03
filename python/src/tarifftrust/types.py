@@ -408,8 +408,8 @@ class CalculationResult(Model):
     """The workspace's standing answers applied, each marked when the request overrode it."""
 
     provenance: dict[str, Any] | None
-    """What an exact replay needs: the engine result's checksum, the request as the engine read
-    it, the incidents and notices applied, and the image of the engine.
+    """What identifies this result for a replay: the engine result's checksum, the request as
+    the engine read it, the legal end of its publication and the image of the engine.
     """
 
     publication_checksum: str | None
@@ -667,8 +667,8 @@ class EntryResult(Model):
     """The workspace's standing answers applied, each marked when the request overrode it."""
 
     provenance: dict[str, Any] | None
-    """What an exact replay needs: the engine result's checksum, the request as the engine read
-    it, the incidents and notices applied, and the image of the engine.
+    """What identifies this result for a replay: the engine result's checksum, the request as
+    the engine read it, the legal end of its publication and the image of the engine.
     """
 
     publication_checksum: str | None

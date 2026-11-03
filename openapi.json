@@ -779,7 +779,7 @@
                 "type": "null"
               }
             ],
-            "description": "What an exact replay needs: the engine result's checksum, the request as the engine read it, the incidents and notices applied, and the image of the engine.",
+            "description": "What identifies this result for a replay: the engine result's checksum, the request as the engine read it, the legal end of its publication and the image of the engine.",
             "title": "Provenance"
           },
           "publication_checksum": {
@@ -1606,7 +1606,7 @@
                 "type": "null"
               }
             ],
-            "description": "What an exact replay needs: the engine result's checksum, the request as the engine read it, the incidents and notices applied, and the image of the engine.",
+            "description": "What identifies this result for a replay: the engine result's checksum, the request as the engine read it, the legal end of its publication and the image of the engine.",
             "title": "Provenance"
           },
           "publication_checksum": {
