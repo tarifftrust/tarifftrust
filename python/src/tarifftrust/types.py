@@ -1576,10 +1576,16 @@ class Source(Model):
     """SHA-256 of the document as archived: the very copy the rate was read from."""
 
     title: str | None
-    """Its title, or the edition of the tariff."""
+    """Its title, or the edition of the tariff. A measure whose text has not changed since
+    keeps citing an earlier edition than the publication's.
+    """
 
     url: str | None
-    """Where the official document is published."""
+    """Where the official document is published: an edition of the tariff at its own file,
+    which keeps serving the bytes of sha256. A publication prepared before 2026-11-03 gives
+    the address of the current edition instead, whose bytes differ once a later edition is
+    out.
+    """
 
 
 class Status(Model):

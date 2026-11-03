@@ -4445,7 +4445,7 @@
                 "type": "null"
               }
             ],
-            "description": "Its title, or the edition of the tariff.",
+            "description": "Its title, or the edition of the tariff. A measure whose text has not changed since keeps citing an earlier edition than the publication's.",
             "title": "Title"
           },
           "url": {
@@ -4457,7 +4457,7 @@
                 "type": "null"
               }
             ],
-            "description": "Where the official document is published.",
+            "description": "Where the official document is published: an edition of the tariff at its own file, which keeps serving the bytes of sha256. A publication prepared before 2026-11-03 gives the address of the current edition instead, whose bytes differ once a later edition is out.",
             "title": "Url"
           }
         },
@@ -4624,6 +4624,28 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "agreements": [
+                    {
+                      "any_column1_origin": false,
+                      "name": "Australia",
+                      "origins": [
+                        "AU"
+                      ],
+                      "symbol": "AU"
+                    },
+                    {
+                      "any_column1_origin": false,
+                      "name": "Bahrain",
+                      "origins": [
+                        "BH"
+                      ],
+                      "symbol": "BH"
+                    }
+                  ],
+                  "condition": "A symbol does not establish eligibility. Consult General Notes and the product's special column.",
+                  "source": "https://hts.usitc.gov/"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/AgreementList"
                 }
@@ -4723,6 +4745,171 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "alerts": [],
+                  "answers": [],
+                  "as_of": "2026-11-03",
+                  "as_of_instant": null,
+                  "assumptions": [
+                    {
+                      "alternatives": [
+                        {
+                          "estimated_duty": "2400.00",
+                          "status": "calculated",
+                          "value": true
+                        }
+                      ],
+                      "choices": null,
+                      "fact": "donation_exemption_claimed",
+                      "label": "Donation exemption claimed",
+                      "measures": [
+                        {
+                          "heading": "9903.05.91",
+                          "label": "Note 52 \u2014 donations \u2014 9903.05.91"
+                        }
+                      ],
+                      "question": "Do you claim the exemption for donations intended to relieve human suffering?",
+                      "reason": "Donation exemption claimed: not declared",
+                      "type": "boolean",
+                      "value": false
+                    }
+                  ],
+                  "base_rate": "16.5%",
+                  "column_rates": {
+                    "general": "16.5%",
+                    "other": "90%",
+                    "special": "Free (AU,BH,CL,CO,IL,JO,KR,MA,OM,P,PA,PE,S,SG)"
+                  },
+                  "components": [
+                    {
+                      "amount": "1650.00",
+                      "expression": "16.5%",
+                      "heading": null,
+                      "id": "base_rate",
+                      "label": "Base duty",
+                      "program": "base",
+                      "required_fields": [],
+                      "source": {
+                        "authority": "USITC",
+                        "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                        "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                        "title": "2026 HTS Revision 22",
+                        "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                      },
+                      "status": "calculated",
+                      "terms": [
+                        {
+                          "kind": "ad_valorem",
+                          "rate": "0.165"
+                        }
+                      ]
+                    },
+                    {
+                      "amount": "1250.00",
+                      "expression": null,
+                      "heading": "9903.05.31",
+                      "id": "9903.05.31#9903.05.31",
+                      "label": "Note 52 additional duty \u2014 China \u2014 9903.05.31",
+                      "program": "note52_country",
+                      "required_fields": [],
+                      "rule": "9903.05.31",
+                      "source": {
+                        "authority": "USITC",
+                        "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                        "title": "2026 HTS Revision 20",
+                        "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                      },
+                      "status": "calculated",
+                      "terms": [
+                        {
+                          "kind": "ad_valorem",
+                          "rate": "0.125"
+                        }
+                      ]
+                    },
+                    {
+                      "amount": "750.00",
+                      "expression": null,
+                      "heading": "9903.88.15",
+                      "id": "9903.88.15#9903.88.15-list",
+                      "label": "Section 301 \u2014 products of China, heading 9903.88.15 (list 4A) \u2014 9903.88.15",
+                      "program": "301",
+                      "required_fields": [],
+                      "rule": "9903.88.15",
+                      "source": {
+                        "authority": "USITC",
+                        "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                        "title": "2026 HTS Revision 21",
+                        "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_21_json.json"
+                      },
+                      "status": "calculated",
+                      "terms": [
+                        {
+                          "kind": "ad_valorem",
+                          "rate": "0.075"
+                        }
+                      ]
+                    }
+                  ],
+                  "currency": "USD",
+                  "description": "T-shirts, singlets, tank tops and similar garments, knitted or crocheted: \u203a Of cotton \u203a Men's or boys': \u203a Other T-shirts: \u203a Men's (338)",
+                  "duty_rate": {
+                    "basis": "Decimal fraction of customs value; implemented duties only, excluding fees and AD/CVD.",
+                    "estimated_ad_valorem_rate": "0.365",
+                    "status": "complete",
+                    "total_ad_valorem_rate": "0.365"
+                  },
+                  "engine_version": "2.18",
+                  "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                  "estimated_duty": "3650.00",
+                  "estimated_landed_cost": "13650.00",
+                  "fees": [],
+                  "fees_status": "not_requested",
+                  "freshness": {
+                    "age_hours": 5.13,
+                    "basis": "Official sources verified every 6 hours; stale after 48 hours",
+                    "checked_at": "2026-11-03T02:25:05.924778+00:00",
+                    "stale": false
+                  },
+                  "hts": "6109100012",
+                  "input_guidance": [],
+                  "knowledge_at": "2026-10-31T00:46:32.836Z",
+                  "known_duty_subtotal": "3650.00",
+                  "known_fee_subtotal": null,
+                  "match": {
+                    "level": 10,
+                    "matched_hts": "6109100012",
+                    "rate_basis": "parent",
+                    "rate_hts": "61091000",
+                    "type": "exact"
+                  },
+                  "origin": "CN",
+                  "policies": [],
+                  "publication_checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                  "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                  "publication_label": "2026 HTS Revision 22",
+                  "reference": "",
+                  "required_fields": [],
+                  "reserved_components": [],
+                  "review_pending": [],
+                  "scenarios": null,
+                  "sources": [
+                    {
+                      "authority": "USITC",
+                      "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                      "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                      "title": "2026 HTS Revision 22",
+                      "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                    }
+                  ],
+                  "statistical_units": [
+                    "doz.",
+                    "kg"
+                  ],
+                  "status": "calculated",
+                  "total_fees": null,
+                  "warnings": []
+                },
                 "schema": {
                   "$ref": "#/components/schemas/CalculationResult"
                 }
@@ -4862,6 +5049,223 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "freshness": {
+                    "27592d41-33b8-428b-b91e-f7846635fa44": {
+                      "age_hours": 5.13,
+                      "basis": "Official sources verified every 6 hours; stale after 48 hours",
+                      "checked_at": "2026-11-03T02:25:05.924778+00:00",
+                      "stale": false
+                    }
+                  },
+                  "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                  "publication_ids": [
+                    "27592d41-33b8-428b-b91e-f7846635fa44"
+                  ],
+                  "results": [
+                    {
+                      "index": 0,
+                      "result": {
+                        "as_of": "2026-11-03",
+                        "base_rate": "16.5%",
+                        "components": [
+                          {
+                            "amount": "1650.00",
+                            "expression": "16.5%",
+                            "heading": null,
+                            "id": "base_rate",
+                            "label": "Base duty",
+                            "program": "base",
+                            "required_fields": [],
+                            "source": {
+                              "authority": "USITC",
+                              "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                              "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                              "title": "2026 HTS Revision 22",
+                              "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                            },
+                            "status": "calculated",
+                            "terms": [
+                              {
+                                "kind": "ad_valorem",
+                                "rate": "0.165"
+                              }
+                            ]
+                          },
+                          {
+                            "amount": "1250.00",
+                            "expression": null,
+                            "heading": "9903.05.31",
+                            "id": "9903.05.31#9903.05.31",
+                            "label": "Note 52 additional duty \u2014 China \u2014 9903.05.31",
+                            "program": "note52_country",
+                            "required_fields": [],
+                            "rule": "9903.05.31",
+                            "source": {
+                              "authority": "USITC",
+                              "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                              "title": "2026 HTS Revision 20",
+                              "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                            },
+                            "status": "calculated",
+                            "terms": [
+                              {
+                                "kind": "ad_valorem",
+                                "rate": "0.125"
+                              }
+                            ]
+                          },
+                          {
+                            "amount": "750.00",
+                            "expression": null,
+                            "heading": "9903.88.15",
+                            "id": "9903.88.15#9903.88.15-list",
+                            "label": "Section 301 \u2014 products of China, heading 9903.88.15 (list 4A) \u2014 9903.88.15",
+                            "program": "301",
+                            "required_fields": [],
+                            "rule": "9903.88.15",
+                            "source": {
+                              "authority": "USITC",
+                              "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                              "title": "2026 HTS Revision 21",
+                              "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_21_json.json"
+                            },
+                            "status": "calculated",
+                            "terms": [
+                              {
+                                "kind": "ad_valorem",
+                                "rate": "0.075"
+                              }
+                            ]
+                          }
+                        ],
+                        "currency": "USD",
+                        "engine_version": "2.18",
+                        "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                        "estimated_duty": "3650.00",
+                        "estimated_landed_cost": "13650.00",
+                        "fees": [],
+                        "fees_status": "not_requested",
+                        "hts": "6109100012",
+                        "knowledge_at": "2026-10-31T00:46:32.836Z",
+                        "known_duty_subtotal": "3650.00",
+                        "match": {
+                          "level": 10,
+                          "matched_hts": "6109100012",
+                          "rate_basis": "parent",
+                          "rate_hts": "61091000",
+                          "type": "exact"
+                        },
+                        "origin": "CN",
+                        "publication_checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                        "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                        "publication_label": "2026 HTS Revision 22",
+                        "required_fields": [],
+                        "sources": [
+                          {
+                            "authority": "USITC",
+                            "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "title": "2026 HTS Revision 22",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                          }
+                        ],
+                        "status": "calculated",
+                        "total_fees": null,
+                        "warnings": []
+                      }
+                    },
+                    {
+                      "index": 1,
+                      "result": {
+                        "as_of": "2026-11-03",
+                        "base_rate": "16.5%",
+                        "components": [
+                          {
+                            "amount": "1650.00",
+                            "expression": "16.5%",
+                            "heading": null,
+                            "id": "base_rate",
+                            "label": "Base duty",
+                            "program": "base",
+                            "required_fields": [],
+                            "source": {
+                              "authority": "USITC",
+                              "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                              "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                              "title": "2026 HTS Revision 22",
+                              "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                            },
+                            "status": "calculated",
+                            "terms": [
+                              {
+                                "kind": "ad_valorem",
+                                "rate": "0.165"
+                              }
+                            ]
+                          },
+                          {
+                            "amount": "1250.00",
+                            "expression": null,
+                            "heading": "9903.05.84",
+                            "id": "9903.05.84#9903.05.84",
+                            "label": "Note 52 additional duty \u2014 Vietnam \u2014 9903.05.84",
+                            "program": "note52_country",
+                            "required_fields": [],
+                            "rule": "9903.05.84",
+                            "source": {
+                              "authority": "USITC",
+                              "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                              "title": "2026 HTS Revision 20",
+                              "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                            },
+                            "status": "calculated",
+                            "terms": [
+                              {
+                                "kind": "ad_valorem",
+                                "rate": "0.125"
+                              }
+                            ]
+                          }
+                        ],
+                        "currency": "USD",
+                        "engine_version": "2.18",
+                        "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                        "estimated_duty": "2900.00",
+                        "estimated_landed_cost": "12900.00",
+                        "fees": [],
+                        "fees_status": "not_requested",
+                        "hts": "6109100012",
+                        "knowledge_at": "2026-10-31T00:46:32.836Z",
+                        "known_duty_subtotal": "2900.00",
+                        "match": {
+                          "level": 10,
+                          "matched_hts": "6109100012",
+                          "rate_basis": "parent",
+                          "rate_hts": "61091000",
+                          "type": "exact"
+                        },
+                        "origin": "VN",
+                        "publication_checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                        "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                        "publication_label": "2026 HTS Revision 22",
+                        "required_fields": [],
+                        "sources": [
+                          {
+                            "authority": "USITC",
+                            "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "title": "2026 HTS Revision 22",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                          }
+                        ],
+                        "status": "calculated",
+                        "total_fees": null,
+                        "warnings": []
+                      }
+                    }
+                  ]
+                },
                 "schema": {
                   "$ref": "#/components/schemas/BatchResult"
                 }
@@ -5001,6 +5405,280 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "as_of": "2026-11-03",
+                  "as_of_instant": null,
+                  "currency": "USD",
+                  "engine_version": "2.18",
+                  "entry_type": "formal",
+                  "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                  "estimated_duty": "1277.50",
+                  "estimated_landed_cost": "4816.46",
+                  "fees": [
+                    {
+                      "amount": "34.58",
+                      "basis": "3500.00",
+                      "label": "MPF",
+                      "source": {
+                        "authority": "CBP",
+                        "checksum": "695e43e1bec377688f6fe5ffb63e0bddd2823b63966a75f66a5c209a92441fee",
+                        "sha256": "695e43e1bec377688f6fe5ffb63e0bddd2823b63966a75f66a5c209a92441fee",
+                        "title": "Formal-entry fee limits \u2014 FY2027",
+                        "url": "https://www.govinfo.gov/content/pkg/FR-2026-07-31/html/2026-15530.htm"
+                      }
+                    },
+                    {
+                      "amount": "4.38",
+                      "basis": "3500.00",
+                      "label": "HMF",
+                      "source": {
+                        "authority": "CBP",
+                        "checksum": "ae35ab88100b5bd409b485bdc9270701c6f3f149495e7544c694f44cc3c652af",
+                        "sha256": "ae35ab88100b5bd409b485bdc9270701c6f3f149495e7544c694f44cc3c652af",
+                        "title": "19 CFR 24.24 \u2014 Harbor maintenance fee",
+                        "url": "https://www.govinfo.gov/content/pkg/CFR-2025-title19-vol1/xml/CFR-2025-title19-vol1-sec24-24.xml"
+                      }
+                    }
+                  ],
+                  "fees_status": "estimated",
+                  "freshness": {
+                    "age_hours": 5.13,
+                    "basis": "Official sources verified every 6 hours; stale after 48 hours",
+                    "checked_at": "2026-11-03T02:25:05.924778+00:00",
+                    "stale": false
+                  },
+                  "input_guidance": [],
+                  "kind": "entry",
+                  "knowledge_at": "2026-10-31T00:46:32.836Z",
+                  "known_duty_subtotal": "1277.50",
+                  "lines": [
+                    {
+                      "as_of": "2026-11-03",
+                      "base_rate": "16.5%",
+                      "components": [
+                        {
+                          "amount": "165.00",
+                          "expression": "16.5%",
+                          "heading": null,
+                          "id": "base_rate",
+                          "label": "Base duty",
+                          "program": "base",
+                          "required_fields": [],
+                          "source": {
+                            "authority": "USITC",
+                            "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "title": "2026 HTS Revision 22",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.165"
+                            }
+                          ]
+                        },
+                        {
+                          "amount": "125.00",
+                          "expression": null,
+                          "heading": "9903.05.31",
+                          "id": "9903.05.31#9903.05.31",
+                          "label": "Note 52 additional duty \u2014 China \u2014 9903.05.31",
+                          "program": "note52_country",
+                          "required_fields": [],
+                          "rule": "9903.05.31",
+                          "source": {
+                            "authority": "USITC",
+                            "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "title": "2026 HTS Revision 20",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.125"
+                            }
+                          ]
+                        },
+                        {
+                          "amount": "75.00",
+                          "expression": null,
+                          "heading": "9903.88.15",
+                          "id": "9903.88.15#9903.88.15-list",
+                          "label": "Section 301 \u2014 products of China, heading 9903.88.15 (list 4A) \u2014 9903.88.15",
+                          "program": "301",
+                          "required_fields": [],
+                          "rule": "9903.88.15",
+                          "source": {
+                            "authority": "USITC",
+                            "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "title": "2026 HTS Revision 21",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_21_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.075"
+                            }
+                          ]
+                        }
+                      ],
+                      "currency": "USD",
+                      "engine_version": "2.18",
+                      "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                      "estimated_duty": "365.00",
+                      "hts": "6109100012",
+                      "knowledge_at": "2026-10-31T00:46:32.836Z",
+                      "known_duty_subtotal": "365.00",
+                      "match": {
+                        "level": 10,
+                        "matched_hts": "6109100012",
+                        "rate_basis": "parent",
+                        "rate_hts": "61091000",
+                        "type": "exact"
+                      },
+                      "origin": "CN",
+                      "publication_checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                      "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                      "publication_label": "2026 HTS Revision 22",
+                      "reference": "PO-1042-1",
+                      "required_fields": [],
+                      "sources": [
+                        {
+                          "authority": "USITC",
+                          "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "title": "2026 HTS Revision 22",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                        }
+                      ],
+                      "status": "calculated",
+                      "warnings": []
+                    },
+                    {
+                      "as_of": "2026-11-03",
+                      "base_rate": "16.5%",
+                      "components": [
+                        {
+                          "amount": "412.50",
+                          "expression": "16.5%",
+                          "heading": null,
+                          "id": "base_rate",
+                          "label": "Base duty",
+                          "program": "base",
+                          "required_fields": [],
+                          "source": {
+                            "authority": "USITC",
+                            "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "title": "2026 HTS Revision 22",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.165"
+                            }
+                          ]
+                        },
+                        {
+                          "amount": "312.50",
+                          "expression": null,
+                          "heading": "9903.05.31",
+                          "id": "9903.05.31#9903.05.31",
+                          "label": "Note 52 additional duty \u2014 China \u2014 9903.05.31",
+                          "program": "note52_country",
+                          "required_fields": [],
+                          "rule": "9903.05.31",
+                          "source": {
+                            "authority": "USITC",
+                            "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "title": "2026 HTS Revision 20",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.125"
+                            }
+                          ]
+                        },
+                        {
+                          "amount": "187.50",
+                          "expression": null,
+                          "heading": "9903.88.15",
+                          "id": "9903.88.15#9903.88.15-list",
+                          "label": "Section 301 \u2014 products of China, heading 9903.88.15 (list 4A) \u2014 9903.88.15",
+                          "program": "301",
+                          "required_fields": [],
+                          "rule": "9903.88.15",
+                          "source": {
+                            "authority": "USITC",
+                            "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "title": "2026 HTS Revision 21",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_21_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.075"
+                            }
+                          ]
+                        }
+                      ],
+                      "currency": "USD",
+                      "engine_version": "2.18",
+                      "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                      "estimated_duty": "912.50",
+                      "hts": "6109100012",
+                      "knowledge_at": "2026-10-31T00:46:32.836Z",
+                      "known_duty_subtotal": "912.50",
+                      "match": {
+                        "level": 10,
+                        "matched_hts": "6109100012",
+                        "rate_basis": "parent",
+                        "rate_hts": "61091000",
+                        "type": "exact"
+                      },
+                      "origin": "CN",
+                      "publication_checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                      "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                      "publication_label": "2026 HTS Revision 22",
+                      "reference": "PO-1042-2",
+                      "required_fields": [],
+                      "sources": [
+                        {
+                          "authority": "USITC",
+                          "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "title": "2026 HTS Revision 22",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                        }
+                      ],
+                      "status": "calculated",
+                      "warnings": []
+                    }
+                  ],
+                  "policies": [],
+                  "publication_checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                  "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                  "publication_label": "2026 HTS Revision 22",
+                  "reference": "",
+                  "required_fields": [],
+                  "scenarios": null,
+                  "status": "calculated",
+                  "total_fees": "38.96",
+                  "transport_mode": "ocean",
+                  "warnings": [
+                    "Fees are computed once for this formal entry; exemptions apply only when explicitly declared, the MPF exemption of goods originating under an agreement claimed excepted. Ocean HMF assumes a taxable port unless declared exempt. Other entry fees and taxes are not included."
+                  ]
+                },
                 "schema": {
                   "$ref": "#/components/schemas/EntryResult"
                 }
@@ -5140,6 +5818,246 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "basis": "Historical calculations from dated official sources using the approvals in force today; gaps are not interpolated",
+                  "covered_windows": [
+                    {
+                      "from": "2026-09-28",
+                      "publication_id": "e2f14b01-a513-4ce9-b81f-515c505239a4",
+                      "through": "2026-10-08"
+                    },
+                    {
+                      "from": "2026-10-09",
+                      "publication_id": "e0067898-dd6f-4220-93d5-a91107227b25",
+                      "through": "2026-10-29"
+                    },
+                    {
+                      "from": "2026-10-30",
+                      "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                      "through": "2026-11-03"
+                    }
+                  ],
+                  "points": [
+                    {
+                      "as_of": "2026-09-28",
+                      "base_rate": "16.5%",
+                      "components": [
+                        {
+                          "amount": "1650.00",
+                          "expression": "16.5%",
+                          "heading": null,
+                          "id": "base_rate",
+                          "label": "Base duty",
+                          "program": "base",
+                          "required_fields": [],
+                          "source": {
+                            "authority": "USITC",
+                            "checksum": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "title": "2026 HTS Revision 20",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.165"
+                            }
+                          ]
+                        },
+                        {
+                          "amount": "1250.00",
+                          "expression": null,
+                          "heading": "9903.05.31",
+                          "id": "9903.05.31#9903.05.31",
+                          "label": "Note 52 additional duty \u2014 China \u2014 9903.05.31",
+                          "program": "note52_country",
+                          "required_fields": [],
+                          "rule": "9903.05.31",
+                          "source": {
+                            "authority": "USITC",
+                            "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "title": "2026 HTS Revision 20",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.125"
+                            }
+                          ]
+                        },
+                        {
+                          "amount": "750.00",
+                          "expression": null,
+                          "heading": "9903.88.15",
+                          "id": "9903.88.15#9903.88.15",
+                          "label": "Section 301 \u2014 products of China, heading 9903.88.15 (list 4A) \u2014 9903.88.15",
+                          "program": "301",
+                          "required_fields": [],
+                          "rule": "9903.88.15",
+                          "source": {
+                            "authority": "USITC",
+                            "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "title": "2026 HTS Revision 20",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.075"
+                            }
+                          ]
+                        }
+                      ],
+                      "currency": "USD",
+                      "engine_version": "2.18",
+                      "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                      "estimated_duty": "3650.00",
+                      "estimated_landed_cost": "13650.00",
+                      "fees": [],
+                      "fees_status": "not_requested",
+                      "hts": "6109100012",
+                      "knowledge_at": "2026-10-19T09:53:15.485Z",
+                      "known_duty_subtotal": "3650.00",
+                      "match": {
+                        "level": 10,
+                        "matched_hts": "6109100012",
+                        "rate_basis": "parent",
+                        "rate_hts": "61091000",
+                        "type": "exact"
+                      },
+                      "origin": "CN",
+                      "publication_checksum": "d495c51eec90e90093c2882427e9f98727c3abd5de1a162e541e8a1771d94671",
+                      "publication_id": "e2f14b01-a513-4ce9-b81f-515c505239a4",
+                      "publication_label": "2026 HTS Revision 20",
+                      "required_fields": [],
+                      "sources": [
+                        {
+                          "authority": "USITC",
+                          "checksum": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                          "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                          "title": "2026 HTS Revision 20",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                        }
+                      ],
+                      "status": "calculated",
+                      "total_fees": null,
+                      "warnings": []
+                    },
+                    {
+                      "as_of": "2026-10-30",
+                      "base_rate": "16.5%",
+                      "components": [
+                        {
+                          "amount": "1650.00",
+                          "expression": "16.5%",
+                          "heading": null,
+                          "id": "base_rate",
+                          "label": "Base duty",
+                          "program": "base",
+                          "required_fields": [],
+                          "source": {
+                            "authority": "USITC",
+                            "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                            "title": "2026 HTS Revision 22",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.165"
+                            }
+                          ]
+                        },
+                        {
+                          "amount": "1250.00",
+                          "expression": null,
+                          "heading": "9903.05.31",
+                          "id": "9903.05.31#9903.05.31",
+                          "label": "Note 52 additional duty \u2014 China \u2014 9903.05.31",
+                          "program": "note52_country",
+                          "required_fields": [],
+                          "rule": "9903.05.31",
+                          "source": {
+                            "authority": "USITC",
+                            "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "title": "2026 HTS Revision 20",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.125"
+                            }
+                          ]
+                        },
+                        {
+                          "amount": "750.00",
+                          "expression": null,
+                          "heading": "9903.88.15",
+                          "id": "9903.88.15#9903.88.15-list",
+                          "label": "Section 301 \u2014 products of China, heading 9903.88.15 (list 4A) \u2014 9903.88.15",
+                          "program": "301",
+                          "required_fields": [],
+                          "rule": "9903.88.15",
+                          "source": {
+                            "authority": "USITC",
+                            "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                            "title": "2026 HTS Revision 21",
+                            "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_21_json.json"
+                          },
+                          "status": "calculated",
+                          "terms": [
+                            {
+                              "kind": "ad_valorem",
+                              "rate": "0.075"
+                            }
+                          ]
+                        }
+                      ],
+                      "currency": "USD",
+                      "engine_version": "2.18",
+                      "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                      "estimated_duty": "3650.00",
+                      "estimated_landed_cost": "13650.00",
+                      "fees": [],
+                      "fees_status": "not_requested",
+                      "hts": "6109100012",
+                      "knowledge_at": "2026-10-31T00:46:32.836Z",
+                      "known_duty_subtotal": "3650.00",
+                      "match": {
+                        "level": 10,
+                        "matched_hts": "6109100012",
+                        "rate_basis": "parent",
+                        "rate_hts": "61091000",
+                        "type": "exact"
+                      },
+                      "origin": "CN",
+                      "publication_checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                      "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                      "publication_label": "2026 HTS Revision 22",
+                      "required_fields": [],
+                      "sources": [
+                        {
+                          "authority": "USITC",
+                          "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "title": "2026 HTS Revision 22",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                        }
+                      ],
+                      "status": "calculated",
+                      "total_fees": null,
+                      "warnings": []
+                    }
+                  ]
+                },
                 "schema": {
                   "$ref": "#/components/schemas/HistoryResult"
                 }
@@ -5258,6 +6176,47 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "facts": [
+                    {
+                      "choices": [],
+                      "default": false,
+                      "help": "Eligibility comes from the goods' characteristics and the published exclusion description; claiming it is the importer's choice, declared with the entry.",
+                      "name": "section301_exclusion_claimed",
+                      "question": "Do you claim the Section 301 exclusion for these goods?",
+                      "scope": "product",
+                      "type": "boolean",
+                      "unit": ""
+                    },
+                    {
+                      "choices": [
+                        {
+                          "label": "Ordinary entry for consumption",
+                          "value": "ordinary"
+                        },
+                        {
+                          "label": "Personal-use goods in a traveler's accompanied baggage",
+                          "value": "personal_baggage"
+                        },
+                        {
+                          "label": "Entry claimed under a provision of chapter 98",
+                          "value": "chapter98"
+                        },
+                        {
+                          "label": "Withdrawal from a foreign trade zone",
+                          "value": "ftz_withdrawal"
+                        }
+                      ],
+                      "default": "ordinary",
+                      "help": "The calculator covers ordinary entries for consumption and withdrawals from warehouse for consumption. Personal-use goods in a traveler's accompanied baggage, goods entered under a provision of chapter 98 and withdrawals from a foreign trade zone follow other rules: other rates, duties assessed on values that differ from one measure to another, or duties kept on goods admitted to a zone before a suspension. They are not supported: declared, the result gives no estimate. Without a declaration, an ordinary entry is assumed, and the result says so.",
+                      "name": "entry_regime",
+                      "question": "Under which regime are these goods entered?",
+                      "scope": "entry",
+                      "type": "choice",
+                      "unit": ""
+                    }
+                  ]
+                },
                 "schema": {
                   "$ref": "#/components/schemas/FactList"
                 }
@@ -5385,6 +6344,40 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "count": 16,
+                  "edition": "2026 HTS Revision 22",
+                  "limit": 50,
+                  "offset": 0,
+                  "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                  "results": [
+                    {
+                      "code": "61091000",
+                      "context": "T-shirts, singlets, tank tops and similar garments, knitted or crocheted: \u203a Of cotton",
+                      "description": "Of cotton",
+                      "display_code": "6109.10.00",
+                      "general": "16.5%",
+                      "other": "90%",
+                      "parent": "6109",
+                      "special": "Free (AU,BH,CL,CO,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+                      "units": []
+                    },
+                    {
+                      "code": "6109100004",
+                      "context": "T-shirts, singlets, tank tops and similar garments, knitted or crocheted: \u203a Of cotton \u203a Men's or boys': \u203a T-shirts, all white, short hemmed sleeves, hemmed bottom, crew or round neckline, or V-neck with a mitered seam at the center of the V, without pockets, trim or embroidery (352)",
+                      "description": "T-shirts, all white, short hemmed sleeves, hemmed bottom, crew or round neckline, or V-neck with a mitered seam at the center of the V, without pockets, trim or embroidery (352)",
+                      "display_code": "6109.10.00.04",
+                      "general": "",
+                      "other": "",
+                      "parent": "61091000",
+                      "special": "",
+                      "units": [
+                        "doz.",
+                        "kg"
+                      ]
+                    }
+                  ]
+                },
                 "schema": {
                   "$ref": "#/components/schemas/HtsSearch"
                 }
@@ -5485,6 +6478,30 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "code": "6109100012",
+                  "context": "T-shirts, singlets, tank tops and similar garments, knitted or crocheted: \u203a Of cotton \u203a Men's or boys': \u203a Other T-shirts: \u203a Men's (338)",
+                  "description": "Men's (338)",
+                  "display_code": "6109.10.00.12",
+                  "edition": "2026 HTS Revision 22",
+                  "footnotes": [],
+                  "general": "16.5%",
+                  "hierarchy": [
+                    "T-shirts, singlets, tank tops and similar garments, knitted or crocheted:",
+                    "Of cotton",
+                    "Men's or boys':",
+                    "Other T-shirts:"
+                  ],
+                  "other": "90%",
+                  "parent": "61091000",
+                  "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                  "rate_from": "61091000",
+                  "special": "Free (AU,BH,CL,CO,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+                  "units": [
+                    "doz.",
+                    "kg"
+                  ]
+                },
                 "schema": {
                   "$ref": "#/components/schemas/HtsDetail"
                 }
@@ -5608,6 +6625,27 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "count": 1,
+                  "limit": 20,
+                  "offset": 0,
+                  "results": [
+                    {
+                      "author": "API key Production",
+                      "created_at": "2026-11-03T08:14:27.513Z",
+                      "engine_version": "2.18",
+                      "estimated_duty": "3650.00",
+                      "id": "5d0e8c1a-7b42-4f6e-9a13-2c8f4b7d1e90",
+                      "image_digest": null,
+                      "incidents": [],
+                      "kind": "single",
+                      "label": "Cotton T-shirts, spring order",
+                      "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                      "source": "api",
+                      "status": "calculated"
+                    }
+                  ]
+                },
                 "schema": {
                   "$ref": "#/components/schemas/SavedList"
                 }
@@ -5715,6 +6753,119 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "id": "5d0e8c1a-7b42-4f6e-9a13-2c8f4b7d1e90",
+                  "kind": "single",
+                  "result": {
+                    "as_of": "2026-11-03",
+                    "base_rate": "16.5%",
+                    "components": [
+                      {
+                        "amount": "1650.00",
+                        "expression": "16.5%",
+                        "heading": null,
+                        "id": "base_rate",
+                        "label": "Base duty",
+                        "program": "base",
+                        "required_fields": [],
+                        "source": {
+                          "authority": "USITC",
+                          "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "title": "2026 HTS Revision 22",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                        },
+                        "status": "calculated",
+                        "terms": [
+                          {
+                            "kind": "ad_valorem",
+                            "rate": "0.165"
+                          }
+                        ]
+                      },
+                      {
+                        "amount": "1250.00",
+                        "expression": null,
+                        "heading": "9903.05.31",
+                        "id": "9903.05.31#9903.05.31",
+                        "label": "Note 52 additional duty \u2014 China \u2014 9903.05.31",
+                        "program": "note52_country",
+                        "required_fields": [],
+                        "rule": "9903.05.31",
+                        "source": {
+                          "authority": "USITC",
+                          "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                          "title": "2026 HTS Revision 20",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                        },
+                        "status": "calculated",
+                        "terms": [
+                          {
+                            "kind": "ad_valorem",
+                            "rate": "0.125"
+                          }
+                        ]
+                      },
+                      {
+                        "amount": "750.00",
+                        "expression": null,
+                        "heading": "9903.88.15",
+                        "id": "9903.88.15#9903.88.15-list",
+                        "label": "Section 301 \u2014 products of China, heading 9903.88.15 (list 4A) \u2014 9903.88.15",
+                        "program": "301",
+                        "required_fields": [],
+                        "rule": "9903.88.15",
+                        "source": {
+                          "authority": "USITC",
+                          "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                          "title": "2026 HTS Revision 21",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_21_json.json"
+                        },
+                        "status": "calculated",
+                        "terms": [
+                          {
+                            "kind": "ad_valorem",
+                            "rate": "0.075"
+                          }
+                        ]
+                      }
+                    ],
+                    "currency": "USD",
+                    "engine_version": "2.18",
+                    "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                    "estimated_duty": "3650.00",
+                    "estimated_landed_cost": "13650.00",
+                    "fees": [],
+                    "fees_status": "not_requested",
+                    "hts": "6109100012",
+                    "knowledge_at": "2026-10-31T00:46:32.836Z",
+                    "known_duty_subtotal": "3650.00",
+                    "match": {
+                      "level": 10,
+                      "matched_hts": "6109100012",
+                      "rate_basis": "parent",
+                      "rate_hts": "61091000",
+                      "type": "exact"
+                    },
+                    "origin": "CN",
+                    "publication_checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                    "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                    "publication_label": "2026 HTS Revision 22",
+                    "required_fields": [],
+                    "sources": [
+                      {
+                        "authority": "USITC",
+                        "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                        "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                        "title": "2026 HTS Revision 22",
+                        "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                      }
+                    ],
+                    "status": "calculated",
+                    "total_fees": null,
+                    "warnings": []
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/Saved"
                 }
@@ -5845,6 +6996,144 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "author": "API key Production",
+                  "created_at": "2026-11-03T08:14:27.513Z",
+                  "engine_version": "2.18",
+                  "estimated_duty": "3650.00",
+                  "id": "5d0e8c1a-7b42-4f6e-9a13-2c8f4b7d1e90",
+                  "image_digest": null,
+                  "incidents": [],
+                  "inputs": {
+                    "as_of": "2026-11-03",
+                    "customs_value": "10000",
+                    "entry_type": "formal",
+                    "facts": {},
+                    "freight": "0",
+                    "hts": "6109100012",
+                    "include_fees": false,
+                    "insurance": "0",
+                    "origin": "CN",
+                    "preference": null,
+                    "publication_id": null,
+                    "quantities": {},
+                    "transport_mode": "ocean"
+                  },
+                  "kind": "single",
+                  "label": "Cotton T-shirts, spring order",
+                  "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                  "result": {
+                    "as_of": "2026-11-03",
+                    "base_rate": "16.5%",
+                    "components": [
+                      {
+                        "amount": "1650.00",
+                        "expression": "16.5%",
+                        "heading": null,
+                        "id": "base_rate",
+                        "label": "Base duty",
+                        "program": "base",
+                        "required_fields": [],
+                        "source": {
+                          "authority": "USITC",
+                          "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                          "title": "2026 HTS Revision 22",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                        },
+                        "status": "calculated",
+                        "terms": [
+                          {
+                            "kind": "ad_valorem",
+                            "rate": "0.165"
+                          }
+                        ]
+                      },
+                      {
+                        "amount": "1250.00",
+                        "expression": null,
+                        "heading": "9903.05.31",
+                        "id": "9903.05.31#9903.05.31",
+                        "label": "Note 52 additional duty \u2014 China \u2014 9903.05.31",
+                        "program": "note52_country",
+                        "required_fields": [],
+                        "rule": "9903.05.31",
+                        "source": {
+                          "authority": "USITC",
+                          "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                          "title": "2026 HTS Revision 20",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_20_json.json"
+                        },
+                        "status": "calculated",
+                        "terms": [
+                          {
+                            "kind": "ad_valorem",
+                            "rate": "0.125"
+                          }
+                        ]
+                      },
+                      {
+                        "amount": "750.00",
+                        "expression": null,
+                        "heading": "9903.88.15",
+                        "id": "9903.88.15#9903.88.15-list",
+                        "label": "Section 301 \u2014 products of China, heading 9903.88.15 (list 4A) \u2014 9903.88.15",
+                        "program": "301",
+                        "required_fields": [],
+                        "rule": "9903.88.15",
+                        "source": {
+                          "authority": "USITC",
+                          "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+                          "title": "2026 HTS Revision 21",
+                          "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_21_json.json"
+                        },
+                        "status": "calculated",
+                        "terms": [
+                          {
+                            "kind": "ad_valorem",
+                            "rate": "0.075"
+                          }
+                        ]
+                      }
+                    ],
+                    "currency": "USD",
+                    "engine_version": "2.18",
+                    "estimate_scope": "Implemented measures only; unresolved or unmodeled duties are not zero.",
+                    "estimated_duty": "3650.00",
+                    "estimated_landed_cost": "13650.00",
+                    "fees": [],
+                    "fees_status": "not_requested",
+                    "hts": "6109100012",
+                    "knowledge_at": "2026-10-31T00:46:32.836Z",
+                    "known_duty_subtotal": "3650.00",
+                    "match": {
+                      "level": 10,
+                      "matched_hts": "6109100012",
+                      "rate_basis": "parent",
+                      "rate_hts": "61091000",
+                      "type": "exact"
+                    },
+                    "origin": "CN",
+                    "publication_checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                    "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                    "publication_label": "2026 HTS Revision 22",
+                    "required_fields": [],
+                    "sources": [
+                      {
+                        "authority": "USITC",
+                        "checksum": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                        "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                        "title": "2026 HTS Revision 22",
+                        "url": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                      }
+                    ],
+                    "status": "calculated",
+                    "total_fees": null,
+                    "warnings": []
+                  },
+                  "source": "api",
+                  "status": "calculated"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/SavedDetail"
                 }
@@ -5943,6 +7232,120 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "coverage": {
+                    "as_of": "2026-11-03",
+                    "base_rates": {
+                      "codes": 29861,
+                      "sha256": "c2b51667fd9dcf04f3428ac41789392db23e86ed773abba78a5038881c70a478",
+                      "source": "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_22_json.json"
+                    },
+                    "fees": [
+                      {
+                        "effective_from": "2026-10-01",
+                        "effective_to": "2027-10-01",
+                        "kind": "hmf",
+                        "maximum": null,
+                        "minimum": null,
+                        "rate": "0.001250",
+                        "source": "https://www.govinfo.gov/content/pkg/CFR-2025-title19-vol1/xml/CFR-2025-title19-vol1-sec24-24.xml"
+                      }
+                    ],
+                    "freshness": {
+                      "age_hours": 5.12,
+                      "basis": "Official sources verified every 6 hours; stale after 48 hours",
+                      "checked_at": "2026-11-03T02:25:05.924778+00:00",
+                      "stale": false
+                    },
+                    "historical_periods": [
+                      {
+                        "edition": "2026 HTS Revision 20",
+                        "publication_id": "e2f14b01-a513-4ce9-b81f-515c505239a4",
+                        "valid_from": "2026-09-28",
+                        "valid_to": "2026-10-09"
+                      }
+                    ],
+                    "out_of_scope": [
+                      "Classification: TariffTrust does not propose an HTS code from a product description.",
+                      "Antidumping and countervailing duties (AD/CVD) and customs valuation determinations.",
+                      "Filing entries or refund claims, and any legal or eligibility opinion.",
+                      "New IEEPA refund features; existing IEEPA research stays, and past IEEPA duties are calculated.",
+                      "Import of CBP ACE exports.",
+                      "Particular entry regimes: personal goods in a traveler's baggage, Chapter 98 entries and withdrawals from a foreign trade zone. Declared, such a regime gives no estimate, neither duties nor fees.",
+                      "Taxes and fees other than the merchandise and harbor maintenance fees."
+                    ],
+                    "positions": {
+                      "examined": 637,
+                      "examined_not_modeled": 423,
+                      "items": [
+                        {
+                          "description": "Articles the product of Canada as provided in subdivision (b)(1) of U.S. note 51 to this subchapter",
+                          "effect": "none",
+                          "heading": "9903.03.12",
+                          "policy": "allowed",
+                          "reason": "Calculated by an approved rule",
+                          "rules": [
+                            "9903.03.12"
+                          ],
+                          "status": "modeled"
+                        }
+                      ],
+                      "modeled": 214,
+                      "total": 637
+                    },
+                    "preferences": {
+                      "agreements": [
+                        {
+                          "any_column1_origin": false,
+                          "name": "Australia",
+                          "origins": [
+                            "AU"
+                          ],
+                          "symbol": "AU"
+                        }
+                      ],
+                      "condition": "A symbol does not establish eligibility. Consult General Notes and the product's special column.",
+                      "source": "https://hts.usitc.gov/"
+                    },
+                    "programs": [
+                      {
+                        "measures": 10,
+                        "program": "201_quartz"
+                      }
+                    ],
+                    "publication": {
+                      "checksum": "85004e661c9792203c96f1bbdf143138634035186c2a364c54ab11d9ccb78995",
+                      "edition": "2026 HTS Revision 22",
+                      "id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                      "valid_from": "2026-10-30",
+                      "valid_to": null
+                    }
+                  },
+                  "engine_version": "2.18",
+                  "freshness_target_hours": 48,
+                  "frozen": false,
+                  "incidents": [],
+                  "notices": [],
+                  "publications": [
+                    {
+                      "approved_from": "2026-10-31T00:46:38.617Z",
+                      "edition": "2026 HTS Revision 22",
+                      "publication_id": "27592d41-33b8-428b-b91e-f7846635fa44",
+                      "valid_from": "2026-10-30",
+                      "valid_to": null
+                    }
+                  ],
+                  "rule_horizon": {
+                    "days_remaining": 332,
+                    "fee_rules_until": "2027-10-01"
+                  },
+                  "verification": {
+                    "consecutive_failures": 0,
+                    "last_failure": null,
+                    "last_success": "2026-11-03T02:25:05.924778+00:00",
+                    "status": "healthy"
+                  }
+                },
                 "schema": {
                   "$ref": "#/components/schemas/Status"
                 }
