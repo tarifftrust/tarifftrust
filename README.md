@@ -5,9 +5,16 @@ examples. Send an HTS code, a country of origin and a value. Get every US import
 applies, from the tariff schedule and Sections 301, 232, 201 and 338 to the entry fees, each with its
 official, dated source.
 
+Create your key in [your workspace](https://tarifftrust.com/keys/); your plan must include the API
+([plans](https://tarifftrust.com/pricing/)). Keep the key on your server, never in a browser or a
+mobile app.
+
+## Python
+
+Python 3.10 or later, sync and async.
+
 ```bash
-pip install tarifftrust      # Python 3.10+
-npm install tarifftrust      # Node.js 20+, TypeScript types included, no dependency
+pip install tarifftrust
 ```
 
 ```python
@@ -20,6 +27,16 @@ result = client.estimate(hts="6109.10.00.12", origin="CN", customs_value="10000"
 print(result.status, result.estimated_duty)
 for component in result.components:
     print(component.label, component.amount, component.source.url)
+```
+
+Everything else is in the [Python client's guide](python/README.md).
+
+## Node.js
+
+Node.js 20 or later, TypeScript types included, no dependency.
+
+```bash
+npm install tarifftrust
 ```
 
 ```ts
@@ -35,9 +52,7 @@ for (const component of result.components) {
 }
 ```
 
-Create your key in [your workspace](https://tarifftrust.com/keys/); your plan must include the API
-([plans](https://tarifftrust.com/pricing/)). Keep the key on your server, never in a browser or a
-mobile app.
+Everything else is in the [Node.js client's guide](node/README.md).
 
 ## What the clients do for you
 
@@ -53,13 +68,14 @@ mobile app.
 Read `status` first, then the amounts. They are decimal strings in US dollars, so that nothing is
 lost to floating point.
 
-**Unknown is never zero.** When `estimated_duty` is null, the duty could not be established: only
-`known_duty_subtotal` is. A question nobody answered is taken in its ordinary case and named in
+**Unknown is never zero.** When `estimated_duty` is `None` in Python or `null` in Node.js, the duty
+could not be established: only `known_duty_subtotal` is. A question nobody answered is taken in its ordinary case and named in
 `assumptions`, with what each other answer would change. See
 [the guide](https://tarifftrust.com/guides/#answer).
 
-For several products entered together, use `estimate_entry`: MPF and HMF are charged once on a
-declaration, so adding up single-product estimates gives a wrong total.
+For several products entered together, use `estimate_entry` in Python or `estimateEntry` in Node.js:
+MPF and HMF are charged once on a declaration, so adding up single-product estimates gives a wrong
+total.
 
 ## Examples
 
@@ -97,7 +113,6 @@ declaration, so adding up single-product estimates gives a wrong total.
 - [Errors and limits](https://tarifftrust.com/api/reference/#errors): statuses, rate limits, quota
 - [Changelog](https://tarifftrust.com/changelog/): what changed in the data and in the API
 - [Data status](https://tarifftrust.com/status/): when each official source was read
-- [Python client](python/README.md) and [Node.js client](node/README.md)
 
 ## Development
 
@@ -108,8 +123,15 @@ python scripts/generate.py --sync   # copy the contract the API serves, and gene
 python scripts/generate.py --check  # fail when a generated file is out of date
 ```
 
+Test the Python client:
+
 ```bash
 cd python && uv run pytest
+```
+
+Test the Node.js client:
+
+```bash
 cd node && npm install && npm test
 ```
 
