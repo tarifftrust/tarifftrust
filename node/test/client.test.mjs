@@ -48,7 +48,7 @@ test("a call sends the key and the fields as given", async () => {
   const { client, requests } = stubbed([json(200, { estimated_duty: "2400.00" })]);
   const result = await client.estimate({ hts: "6109.10.00.12", origin: "CN", customs_value: "10000" });
   const [request] = requests;
-  assert.equal(request.url, "https://api.tarifftrust.com/v1/estimates");
+  assert.equal(request.url, "https://api.tarifftrust.com/v2/estimates");
   assert.equal(request.method, "POST");
   assert.equal(request.headers.Authorization, "Bearer tarifftrust_test");
   assert.equal(request.headers["Content-Type"], "application/json");
@@ -60,12 +60,12 @@ test("a call sends the key and the fields as given", async () => {
 test("a path and a query are encoded, and what is unset is not sent", async () => {
   const { client, requests } = stubbed([json(200, {}), json(200, {}), json(200, {})]);
   await client.getHts("61/09");
-  assert.equal(requests[0].url, "https://api.tarifftrust.com/v1/hts/61%2F09");
+  assert.equal(requests[0].url, "https://api.tarifftrust.com/v2/hts/61%2F09");
   assert.equal(requests[0].body, undefined);
   await client.searchHts({ q: "cotton t-shirt", limit: 5, chapter: undefined });
-  assert.equal(requests[1].url, "https://api.tarifftrust.com/v1/hts?q=cotton+t-shirt&limit=5");
+  assert.equal(requests[1].url, "https://api.tarifftrust.com/v2/hts?q=cotton+t-shirt&limit=5");
   await client.searchHts();
-  assert.equal(requests[2].url, "https://api.tarifftrust.com/v1/hts");
+  assert.equal(requests[2].url, "https://api.tarifftrust.com/v2/hts");
 });
 
 test("the key comes from the environment", async () => {
@@ -96,7 +96,7 @@ test("without a key only the status is sent", async () => {
 test("the base URL is yours to change", async () => {
   const { client, requests } = stubbed([json(200, {})], { baseUrl: "http://api.localhost:8000/" });
   await client.listFacts();
-  assert.equal(requests[0].url, "http://api.localhost:8000/v1/facts");
+  assert.equal(requests[0].url, "http://api.localhost:8000/v2/facts");
 });
 
 test("the base URL comes from the environment", async () => {
@@ -104,7 +104,7 @@ test("the base URL comes from the environment", async () => {
   try {
     const { client, requests } = stubbed([json(200, {})]);
     await client.listFacts();
-    assert.equal(requests[0].url, "http://api.localhost:8000/v1/facts");
+    assert.equal(requests[0].url, "http://api.localhost:8000/v2/facts");
   } finally {
     delete process.env.TARIFFTRUST_BASE_URL;
   }
@@ -132,16 +132,15 @@ test("each call has its own idempotency key unless you give one", async () => {
 });
 
 test("every counted operation takes an idempotency key, and a read none", async () => {
-  const { client, requests } = stubbed(Array.from({ length: 6 }, () => json(200, {})));
+  const { client, requests } = stubbed(Array.from({ length: 5 }, () => json(200, {})));
   await client.estimate({ hts: "1", origin: "CN" });
   await client.estimateBatch({ items: [] });
   await client.estimateEntry({ lines: [] });
   await client.estimateHistory({ hts: "1", origin: "CN" });
-  await client.saveEstimate({ estimate: { hts: "1", origin: "CN" } });
   await client.listAgreements();
   assert.deepEqual(
     requests.map((request) => "Idempotency-Key" in request.headers),
-    [true, true, true, true, true, false],
+    [true, true, true, true, false],
   );
 });
 

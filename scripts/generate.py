@@ -20,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTRACT_FILE = ROOT / "openapi.json"
-LIVE_CONTRACT = "https://api.tarifftrust.com/v1/openapi.json"
+LIVE_CONTRACT = "https://api.tarifftrust.com/v2/openapi.json"
 PYTHON_TYPES = ROOT / "python/src/tarifftrust/types.py"
 PYTHON_OPERATIONS = ROOT / "python/src/tarifftrust/_operations.py"
 NODE_TYPES = ROOT / "node/src/types.ts"

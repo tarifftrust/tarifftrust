@@ -46,7 +46,7 @@ def unit_costs(order, entry):
     and the cost of a unit. What is unknown stays unknown, never 0: without its duty or the order's
     fees, a line has no landed cost."""
     total_value = sum(Decimal(line["customs_value"]) for line in order)
-    fees = None if entry.total_fees is None else Decimal(entry.total_fees)
+    fees = None if entry.estimated_fees is None else Decimal(entry.estimated_fees)
     rows = []
     for line, result in zip(order, entry.lines, strict=True):
         value = Decimal(line["customs_value"])
@@ -63,16 +63,14 @@ def unit_costs(order, entry):
 def main(path):
     with TariffTrust() as client:
         entry = estimate(client, read_order(path), reference=path)
-    print(f"Status: {entry.status}, from {entry.publication_label}, as of {entry.as_of}")
-    print(f"Duty: {entry.estimated_duty}  Fees: {entry.total_fees}")
+    print(f"Status: {entry.status}, from {entry.data.edition}, as of {entry.as_of}")
+    print(f"Duty: {entry.estimated_duty}  Fees: {entry.estimated_fees}")
     print(f"Landed cost: {entry.estimated_landed_cost}")
     for sku, status, duty, unit in unit_costs(read_order(path), entry):
         print(f"  {sku} ({status}): duty {duty or 'unknown'}, per unit {unit or 'unknown'}")
-    for question in entry.input_guidance or []:
-        print(f"To answer: {question.question or question.label} ({question.field})")
     for line in entry.lines:
-        for question in line.input_guidance or []:
-            print(f"To answer for {line.reference}: {question.question or question.label}")
+        for item in line.missing or []:
+            print(f"To send for {line.reference}: {item.question} ({item.field})")
     return 0
 
 

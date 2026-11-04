@@ -41,8 +41,8 @@ export async function dutiesOfCart(cartLines) {
   return {
     status: entry.status,
     duty: entry.estimated_duty,
-    fees: entry.total_fees,
-    publication_id: entry.publication_id,
+    fees: entry.estimated_fees,
+    publication_id: entry.data.publication_id,
     lines: entry.lines.map((line) => ({
       sku: line.reference,
       status: line.status,

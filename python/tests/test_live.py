@@ -17,8 +17,7 @@ PRODUCT = {"hts": "6109.10.00.12", "origin": "CN", "customs_value": "10000"}
 
 def first_published_day(client):
     """The first day the API holds, for a history that does not leave its data."""
-    starts = [item["valid_from"] for item in client.get_status().publications]
-    return min(starts)
+    return client.get_status().covered_from
 
 
 def read_all(value):
@@ -51,9 +50,9 @@ def test_status(client):
 
 def test_estimate(client):
     result = client.estimate(**PRODUCT)
-    assert isinstance(result, types.CalculationResult)
+    assert isinstance(result, types.Estimate)
     assert result.status in {"calculated", "partial", "needs_information"}
-    assert all(isinstance(item, types.Component) for item in result.components)
+    assert all(isinstance(item, types.Duty) for item in result.duties or [])
     read_all(result)
 
 
@@ -71,13 +70,13 @@ def test_estimate_batch(client):
 
 def test_estimate_entry(client):
     entry = client.estimate_entry(lines=[{**PRODUCT, "customs_value": "1000", "reference": "PO-1"}])
-    assert isinstance(entry, types.EntryResult) and entry.lines[0].reference == "PO-1"
+    assert isinstance(entry, types.Declaration) and entry.lines[0].reference == "PO-1"
     read_all(entry)
 
 
 def test_estimate_history(client):
     history = client.estimate_history(**PRODUCT, from_=first_published_day(client))
-    assert isinstance(history.points[0], types.CalculationResult)
+    assert isinstance(history.points[0], types.HistoryPoint)
     read_all(history)
 
 
@@ -93,14 +92,13 @@ def test_catalog(client):
 
 
 def test_saved_estimates(client):
-    saved = client.save_estimate(estimate=PRODUCT, label="SDK live test")
-    assert isinstance(saved.result, types.CalculationResult)
-    read_all(saved)
-    detail = client.get_saved_estimate(saved.id)
-    assert detail.label == "SDK live test"
+    saved = client.estimate(**PRODUCT, save=True, label="SDK live test")
+    detail = client.get_saved_estimate(saved.saved_estimate_id)
+    assert detail.label == "SDK live test" and isinstance(detail.result, types.AuditedEstimate)
     read_all(detail)
-    declaration = client.save_estimate(entry={"lines": [PRODUCT]})
-    assert isinstance(declaration.result, types.EntryResult) and declaration.entry_id
+    declaration = client.estimate_entry(lines=[PRODUCT], save=True)
+    found = client.get_saved_estimate(declaration.saved_estimate_id)
+    assert isinstance(found.result, types.AuditedDeclaration)
     listed = client.list_saved_estimates(limit=2)
     assert listed.results and listed.limit == 2
     read_all(listed)

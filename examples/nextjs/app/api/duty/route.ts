@@ -18,8 +18,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       status: result.status,
       duty: result.estimated_duty,
-      known_subtotal: result.known_duty_subtotal,
-      lines: result.components.map(({ label, amount }) => ({ label, amount })),
+      lines: (result.duties ?? []).map(({ name, amount }) => ({ name, amount })),
+      missing: (result.missing ?? []).map(({ question }) => question),
     });
   } catch (error) {
     if (error instanceof InvalidInputError) {

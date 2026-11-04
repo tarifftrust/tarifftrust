@@ -5,8 +5,8 @@ import { type FormEvent, useState } from "react";
 interface Answer {
   status?: string;
   duty?: string | null;
-  known_subtotal?: string | null;
-  lines?: { label: string; amount: string | null }[];
+  lines?: { name: string; amount: string | null }[];
+  missing?: string[];
   error?: string;
 }
 
@@ -35,15 +35,15 @@ export default function Page() {
       {answer?.status && (
         <>
           <p>
-            {/* Unknown is never zero: without a duty, only the subtotal is established. */}
+            {/* Unknown is never zero: without a duty, the answer says what is missing. */}
             {answer.duty != null
               ? `Estimated duty: $${answer.duty}`
-              : `Duty unknown (${answer.status}). Established so far: ${answer.known_subtotal ?? "nothing"}`}
+              : `Duty unknown (${answer.status}). ${answer.missing?.join(" ") ?? ""}`}
           </p>
           <ul>
-            {answer.lines?.map(({ label, amount }) => (
-              <li key={label}>
-                {label}: {amount === null ? "unknown" : `$${amount}`}
+            {answer.lines?.map(({ name, amount }) => (
+              <li key={name}>
+                {name}: {amount === null ? "unknown" : `$${amount}`}
               </li>
             ))}
           </ul>

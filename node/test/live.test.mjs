@@ -18,7 +18,7 @@ test("status", options, async () => {
 test("estimate", options, async () => {
   const result = await client.estimate(product);
   assert.ok(["calculated", "partial", "needs_information"].includes(result.status));
-  assert.ok(Array.isArray(result.components));
+  assert.ok(Array.isArray(result.duties ?? []));
 });
 
 test("estimateBatch", options, async () => {
@@ -32,8 +32,7 @@ test("estimateEntry", options, async () => {
 });
 
 test("estimateHistory", options, async () => {
-  const { publications } = await client.getStatus();
-  const from = publications.map((item) => item.valid_from).sort()[0];
+  const { covered_from: from } = await client.getStatus();
   const history = await client.estimateHistory({ ...product, from });
   assert.ok(history.points.length > 0);
 });
@@ -48,10 +47,10 @@ test("catalog", options, async () => {
 });
 
 test("saved estimates", options, async () => {
-  const saved = await client.saveEstimate({ estimate: product, label: "SDK live test" });
-  assert.equal((await client.getSavedEstimate(saved.id)).label, "SDK live test");
-  const declaration = await client.saveEstimate({ entry: { lines: [product] } });
-  assert.ok(declaration.entry_id);
+  const saved = await client.estimate({ ...product, save: true, label: "SDK live test" });
+  assert.equal((await client.getSavedEstimate(saved.saved_estimate_id)).label, "SDK live test");
+  const declaration = await client.estimateEntry({ lines: [product], save: true });
+  assert.ok(declaration.saved_estimate_id);
   assert.equal((await client.listSavedEstimates({ limit: 2 })).limit, 2);
 });
 

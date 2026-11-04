@@ -38,7 +38,7 @@ def test_a_call_sends_the_key_and_only_the_arguments_given(api, client):
     request = api.requests[0]
     assert (request.method, str(request.url)) == (
         "POST",
-        "https://api.tarifftrust.com/v1/estimates",
+        "https://api.tarifftrust.com/v2/estimates",
     )
     assert request.headers["Authorization"] == "Bearer tarifftrust_test"
     assert request.headers["Content-Type"] == "application/json"
@@ -79,7 +79,7 @@ def test_a_reserved_word_is_an_argument_with_an_underscore(api, client):
 def test_a_path_and_a_query_are_encoded(api, client):
     api.answer()
     client.get_hts("61/09")
-    assert api.requests[0].url.raw_path == b"/v1/hts/61%2F09"
+    assert api.requests[0].url.raw_path == b"/v2/hts/61%2F09"
     api.answer()
     client.search_hts(q="cotton t-shirt", limit=5)
     assert dict(api.requests[1].url.params) == {"q": "cotton t-shirt", "limit": "5"}
@@ -121,7 +121,7 @@ def test_the_base_url_is_yours_to_change(api):
     )
     api.answer()
     local.list_facts()
-    assert str(api.requests[0].url) == "http://api.localhost:8000/v1/facts"
+    assert str(api.requests[0].url) == "http://api.localhost:8000/v2/facts"
 
 
 def test_the_base_url_comes_from_the_environment(api, monkeypatch):
@@ -129,7 +129,7 @@ def test_the_base_url_comes_from_the_environment(api, monkeypatch):
     local = TariffTrust("k", http_client=httpx.Client(transport=httpx.MockTransport(api)))
     api.answer()
     local.list_facts()
-    assert str(api.requests[0].url) == "http://api.localhost:8000/v1/facts"
+    assert str(api.requests[0].url) == "http://api.localhost:8000/v2/facts"
 
 
 # ---------- Idempotency ----------
@@ -168,7 +168,6 @@ def test_a_read_sends_no_idempotency_key(api, client):
         lambda client: client.estimate_batch(items=[]),
         lambda client: client.estimate_entry(lines=[]),
         lambda client: client.estimate_history(hts="1", origin="CN"),
-        lambda client: client.save_estimate(estimate={"hts": "1", "origin": "CN"}),
     ],
 )
 def test_every_counted_operation_takes_an_idempotency_key(api, client, call):

@@ -3,7 +3,7 @@
 Official Python and Node.js clients for the [TariffTrust API](https://tarifftrust.com/api/), with
 examples. Send an HTS code, a country of origin and a value. Get every US import duty and fee that
 applies, from the tariff schedule and Sections 301, 232, 201 and 338 to the entry fees, each with its
-official, dated source.
+official source.
 
 Create your key in [your workspace](https://tarifftrust.com/keys/); your plan must include the API
 ([plans](https://tarifftrust.com/pricing/)). Keep the key on your server, never in a browser or a
@@ -25,8 +25,8 @@ client = TariffTrust(api_key="tarifftrust_...")  # or set TARIFFTRUST_API_KEY
 result = client.estimate(hts="6109.10.00.12", origin="CN", customs_value="10000")
 
 print(result.status, result.estimated_duty)
-for component in result.components:
-    print(component.label, component.amount, component.source.url)
+for duty in result.duties or []:
+    print(duty.name, duty.rate, duty.amount, duty.source.url)
 ```
 
 Everything else is in the [Python client's guide](python/README.md).
@@ -47,8 +47,8 @@ const client = new TariffTrust({ apiKey: "tarifftrust_..." }); // or set TARIFFT
 const result = await client.estimate({ hts: "6109.10.00.12", origin: "CN", customs_value: "10000" });
 
 console.log(result.status, result.estimated_duty);
-for (const component of result.components) {
-  console.log(component.label, component.amount, component.source.url);
+for (const duty of result.duties ?? []) {
+  console.log(duty.name, duty.rate, duty.amount, duty.source?.url);
 }
 ```
 
@@ -68,10 +68,14 @@ Everything else is in the [Node.js client's guide](node/README.md).
 Read `status` first, then the amounts. They are decimal strings in US dollars, so that nothing is
 lost to floating point.
 
-**Unknown is never zero.** When `estimated_duty` is `None` in Python or `null` in Node.js, the duty
-could not be established: only `known_duty_subtotal` is. A question nobody answered is taken in its ordinary case and named in
-`assumptions`, with what each other answer would change. See
+**Unknown is never zero.** When `estimated_duty` is `None` in Python, or `null` or left out in Node.js,
+the duty is not established: with `needs_information`, `missing` says what to send again; with `partial`,
+`withheld` says what is left out for now. A question nobody answered is taken in its ordinary case
+and said in `facts`: send your own answer to change the estimate. See
 [the guide](https://tarifftrust.com/guides/#answer).
+
+From version 0.2.0 this package calls API v2; version 0.1.0 calls API v1, which is closing. See
+[moving from v1 to v2](https://tarifftrust.com/guides/#from-v1).
 
 For several products entered together, use `estimate_entry` in Python or `estimateEntry` in Node.js:
 MPF and HMF are charged once on a declaration, so adding up single-product estimates gives a wrong
@@ -92,18 +96,17 @@ total.
 <!-- operations:start -->
 | Python | Node.js | Route | What it does |
 | --- | --- | --- | --- |
-| `list_agreements` | `listAgreements` | [`GET /v1/agreements`](https://tarifftrust.com/api/reference/#list-agreements) | List the trade agreements |
-| `estimate` | `estimate` | [`POST /v1/estimates`](https://tarifftrust.com/api/reference/#estimate) | Estimate one product |
-| `estimate_batch` | `estimateBatch` | [`POST /v1/estimates/batch`](https://tarifftrust.com/api/reference/#estimate-batch) | Estimate up to 200 products |
-| `estimate_entry` | `estimateEntry` | [`POST /v1/estimates/entry`](https://tarifftrust.com/api/reference/#estimate-entry) | Estimate a whole import declaration |
-| `estimate_history` | `estimateHistory` | [`POST /v1/estimates/history`](https://tarifftrust.com/api/reference/#estimate-history) | Estimate one product at every change of the tariff |
-| `list_facts` | `listFacts` | [`GET /v1/facts`](https://tarifftrust.com/api/reference/#list-facts) | List the questions an estimate may ask |
-| `search_hts` | `searchHts` | [`GET /v1/hts`](https://tarifftrust.com/api/reference/#search-hts) | Search the US tariff schedule |
-| `get_hts` | `getHts` | [`GET /v1/hts/{code}`](https://tarifftrust.com/api/reference/#get-hts) | Read one line of the US tariff schedule |
-| `list_saved_estimates` | `listSavedEstimates` | [`GET /v1/saved-estimates`](https://tarifftrust.com/api/reference/#list-saved-estimates) | List the saved estimates |
-| `save_estimate` | `saveEstimate` | [`POST /v1/saved-estimates`](https://tarifftrust.com/api/reference/#save-estimate) | Calculate and save an estimate |
-| `get_saved_estimate` | `getSavedEstimate` | [`GET /v1/saved-estimates/{id}`](https://tarifftrust.com/api/reference/#get-saved-estimate) | Read a saved estimate |
-| `get_status` | `getStatus` | [`GET /v1/status`](https://tarifftrust.com/api/reference/#get-status) | Read the status and the coverage of the data |
+| `list_agreements` | `listAgreements` | [`GET /v2/agreements`](https://tarifftrust.com/api/reference/#list-agreements) | List the trade agreements |
+| `estimate` | `estimate` | [`POST /v2/estimates`](https://tarifftrust.com/api/reference/#estimate) | Estimate one product |
+| `estimate_batch` | `estimateBatch` | [`POST /v2/estimates/batch`](https://tarifftrust.com/api/reference/#estimate-batch) | Estimate up to 200 products |
+| `estimate_entry` | `estimateEntry` | [`POST /v2/estimates/entry`](https://tarifftrust.com/api/reference/#estimate-entry) | Estimate a whole import declaration |
+| `estimate_history` | `estimateHistory` | [`POST /v2/estimates/history`](https://tarifftrust.com/api/reference/#estimate-history) | Estimate one product at every change of the tariff |
+| `list_facts` | `listFacts` | [`GET /v2/facts`](https://tarifftrust.com/api/reference/#list-facts) | List the questions an estimate may ask |
+| `search_hts` | `searchHts` | [`GET /v2/hts`](https://tarifftrust.com/api/reference/#search-hts) | Search the US tariff schedule |
+| `get_hts` | `getHts` | [`GET /v2/hts/{code}`](https://tarifftrust.com/api/reference/#get-hts) | Read one line of the US tariff schedule |
+| `list_saved_estimates` | `listSavedEstimates` | [`GET /v2/saved-estimates`](https://tarifftrust.com/api/reference/#list-saved-estimates) | List the saved estimates |
+| `get_saved_estimate` | `getSavedEstimate` | [`GET /v2/saved-estimates/{id}`](https://tarifftrust.com/api/reference/#get-saved-estimate) | Read a saved estimate |
+| `get_status` | `getStatus` | [`GET /v2/status`](https://tarifftrust.com/api/reference/#get-status) | Read the status of the data |
 <!-- operations:end -->
 
 ## Documentation

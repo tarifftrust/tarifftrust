@@ -14,16 +14,13 @@ from .types import (
     AgreementList,
     BatchItem,
     BatchResult,
-    CalculationResult,
-    EntryInput,
-    EntryResult,
-    EstimateInput,
+    Declaration,
+    Estimate,
     FactList,
     HistoryResult,
     HtsDetail,
     HtsSearch,
     LineInput,
-    Saved,
     SavedDetail,
     SavedList,
     Status,
@@ -61,7 +58,7 @@ class Operations:
         """
         return self._request(
             "GET",
-            "/v1/agreements",
+            "/v2/agreements",
             model=AgreementList,
         )
 
@@ -77,22 +74,21 @@ class Operations:
         freight: int | float | Decimal | str | None = None,
         include_fees: bool | None = None,
         insurance: int | float | Decimal | str | None = None,
+        label: str | None = None,
         preference: str | None = None,
         publication_id: str | None = None,
         quantities: Mapping[str, int | float | Decimal | str] | None = None,
+        save: bool | None = None,
         transport_mode: Literal["air", "ocean", "land"] | None = None,
         idempotency_key: str | None = None,
-    ) -> CalculationResult:
+    ) -> Estimate:
         """Estimate one product.
 
         Every US duty and fee that applies to one product at a date, each with its official
-        source. Without a customs value, the duty rate. Not saved: an unsaved estimate cannot be
-        replayed, reported or notified in an incident; save it with POST /v1/saved-estimates.
-        Needs the calculate permission; counted in the quota unless it gives no figure of the
-        duty: a question asked without any duty amount or rate (status needs_information), a
-        code the tariff does not have or that names no product, a regime the service does not
-        calculate. A question that gives the duty of each answer (scenarios), their bounds or
-        the subtotal already known is counted.
+        source. Without a customs value, the duty rate when the duties are percentages. When
+        something is missing to give a figure, the answer says what to send again. Send save to
+        keep the estimate. Needs the calculate permission; counted in the quota unless it gives
+        no figure of the duty: status needs_information, not_found, not_covered or unsupported.
 
         Args:
             hts: The HTS code of the goods: 4, 6, 8 or 10 digits, dots and spaces ignored. A
@@ -107,26 +103,33 @@ class Operations:
             customs_value: Customs value in US dollars: the transaction value declared, not a
                 retail price. Unset: the duty rate is given, and an amount only where the duty
                 does not depend on the value.
-            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value;
-                an informal one, the fixed informal fee.
-            facts: Answers to the questions of the facts catalogue (GET /v1/facts), by name. A
-                name outside the catalogue is reported in the result and never used.
+            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value.
+                An informal entry pays a fixed fee the estimate does not calculate: it gives no
+                fees.
+            facts: Answers to the questions of the facts catalogue (GET /v2/facts), by name. A
+                name outside the catalogue is said in warnings and never used.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             include_fees: Count the entry fees (MPF, HMF) of a declaration of this product
-                alone; the landed cost includes them only then. The MPF is charged once on a
-                declaration: for several products entered together, use POST
-                /v1/estimates/entry.
+                alone. Each product is estimated as its own declaration: the MPF is charged once
+                on a declaration, so for several products entered together use POST
+                /v2/estimates/entry.
             insurance: Insurance of the shipment in US dollars: no duty on it, it adds to the
                 landed cost.
+            label: A name for the saved estimate; needs save.
             preference: A trade agreement's symbol from the HTS special column (S for USMCA, KR
-                for KORUS…; GET /v1/agreements). Giving it declares that the goods meet its
+                for KORUS…; GET /v2/agreements). Giving it declares that the goods meet its
                 rules of origin and that you hold the proof.
-            publication_id: Calculate with this publication of the rules rather than the one in
-                force on the date: a saved result's publication_id replays it.
+            publication_id: Calculate with this publication of the rules instead of the one in
+                service on that date: the data.publication_id of an earlier answer gives the
+                same result again, as long as the engine has not changed.
             quantities: Quantities in the units a duty counts (kg, l, item, dozen, pair,
-                proof_liter…), nonnegative. A result names the quantity it needs in
-                required_fields ("quantities.kg").
+                proof_liter…), nonnegative. An answer names the quantity it needs in missing
+                ("quantities.kg").
+            save: Save the estimate: only a saved estimate keeps its detail, is reported, and is
+                notified if a rate proves wrong. An answer without a figure is not saved. Send
+                an Idempotency-Key: without one, a request sent again after a timeout saves
+                twice.
             transport_mode: How the goods arrive; by sea they also pay the harbor maintenance
                 fee (HMF). Unset: land for goods of Canada or Mexico, ocean otherwise.
             idempotency_key: Makes a retry of this call safe; a new one is generated for each
@@ -134,9 +137,9 @@ class Operations:
         """
         return self._request(
             "POST",
-            "/v1/estimates",
-            model=CalculationResult,
-            body={"hts": hts, "origin": origin, "as_of": as_of, "customs_value": customs_value, "entry_type": entry_type, "facts": facts, "freight": freight, "include_fees": include_fees, "insurance": insurance, "preference": preference, "publication_id": publication_id, "quantities": quantities, "transport_mode": transport_mode},
+            "/v2/estimates",
+            model=Estimate,
+            body={"hts": hts, "origin": origin, "as_of": as_of, "customs_value": customs_value, "entry_type": entry_type, "facts": facts, "freight": freight, "include_fees": include_fees, "insurance": insurance, "label": label, "preference": preference, "publication_id": publication_id, "quantities": quantities, "save": save, "transport_mode": transport_mode},
             idempotent=True,
             idempotency_key=idempotency_key,
         )
@@ -150,26 +153,28 @@ class Operations:
     ) -> BatchResult:
         """Estimate up to 200 products.
 
-        Each item calculated on its own, as POST /v1/estimates would, in the order given. An
-        invalid item refuses the whole batch (422, error.fields naming items.<index>.<field>);
-        an item that cannot be calculated (a date no edition covers) has its own error in
-        results, the others are calculated. The batch's publication_id, if any, holds for every
-        item. Counted as one request, whatever its number of items, unless none of them gives a
-        figure of the duty (questions without any duty amount or rate, and errors, only). When
-        the data is unavailable for every item, the batch is a 503 to send again, neither
-        counted nor kept for its Idempotency-Key; when only for some, they have their error
-        (data_unavailable) in results: send those items again.
+        Each item calculated on its own, as POST /v2/estimates would, in the order given: each
+        is its own declaration, so do not add their fees up; for several products entered
+        together, use POST /v2/estimates/entry. An invalid item refuses the whole batch (422,
+        error.fields naming items.<index>.<field>); an item that cannot be calculated (a date no
+        edition covers) has its own error in results, the others are calculated. The batch's
+        publication_id, if any, holds for every item. Counted as one request, whatever its
+        number of items, unless none of them gives a figure of the duty. When the data is
+        unavailable for every item, the batch is a 503 to send again, neither counted nor kept
+        for its Idempotency-Key; when only for some, they have their error (data_unavailable) in
+        results: send those items again.
 
         Args:
             items: The products, each calculated on its own.
-            publication_id: Calculate with this publication of the rules rather than the one in
-                force on the date: a saved result's publication_id replays it.
+            publication_id: Calculate with this publication of the rules instead of the one in
+                service on that date: the data.publication_id of an earlier answer gives the
+                same result again, as long as the engine has not changed.
             idempotency_key: Makes a retry of this call safe; a new one is generated for each
                 call otherwise.
         """
         return self._request(
             "POST",
-            "/v1/estimates/batch",
+            "/v2/estimates/batch",
             model=BatchResult,
             body={"items": items, "publication_id": publication_id},
             idempotent=True,
@@ -186,18 +191,18 @@ class Operations:
         freight: int | float | Decimal | str | None = None,
         include_fees: bool | None = None,
         insurance: int | float | Decimal | str | None = None,
+        label: str | None = None,
         publication_id: str | None = None,
         reference: str | None = None,
+        save: bool | None = None,
         transport_mode: Literal["air", "ocean", "land"] | None = None,
         idempotency_key: str | None = None,
-    ) -> EntryResult:
+    ) -> Declaration:
         """Estimate a whole import declaration.
 
         Every line, then the MPF and the HMF once on the declaration: adding the estimates of
-        the lines of one declaration gives a wrong MPF. Not saved: save it with POST /v1/saved-
-        estimates (entry) to replay or report it. Counted as one request, whatever its number of
-        lines, unless it gives no figure of the duty (a question without any duty amount or
-        rate).
+        the lines of one declaration gives a wrong MPF. Send save to keep the estimate. Counted
+        as one request, whatever its number of lines, unless it gives no figure of the duty.
 
         Args:
             lines: The lines of the declaration, each a product.
@@ -205,18 +210,25 @@ class Operations:
                 ("2026-04-05"); or, on a day when a measure takes effect at a stated hour, the
                 instant of entry with its UTC offset ("2026-04-05T00:01:00-04:00"). Unset:
                 today.
-            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value;
-                an informal one, the fixed informal fee.
-            facts: Answers that hold for the whole declaration (GET /v1/facts, scope entry or
+            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value.
+                An informal entry pays a fixed fee the estimate does not calculate: it gives no
+                fees.
+            facts: Answers that hold for the whole declaration (GET /v2/facts, scope entry or
                 shipment).
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             include_fees: Count the entry fees (MPF, HMF) of the declaration.
             insurance: Insurance of the shipment in US dollars: no duty on it, it adds to the
                 landed cost.
-            publication_id: Calculate with this publication of the rules rather than the one in
-                force on the date: a saved result's publication_id replays it.
+            label: A name for the saved estimate; needs save.
+            publication_id: Calculate with this publication of the rules instead of the one in
+                service on that date: the data.publication_id of an earlier answer gives the
+                same result again, as long as the engine has not changed.
             reference: Your reference for the declaration.
+            save: Save the estimate: only a saved estimate keeps its detail, is reported, and is
+                notified if a rate proves wrong. An answer without a figure is not saved. Send
+                an Idempotency-Key: without one, a request sent again after a timeout saves
+                twice.
             transport_mode: How the goods arrive; by sea they also pay the harbor maintenance
                 fee (HMF). Unset: land for goods of Canada or Mexico, ocean otherwise.
             idempotency_key: Makes a retry of this call safe; a new one is generated for each
@@ -224,9 +236,9 @@ class Operations:
         """
         return self._request(
             "POST",
-            "/v1/estimates/entry",
-            model=EntryResult,
-            body={"lines": lines, "as_of": as_of, "entry_type": entry_type, "facts": facts, "freight": freight, "include_fees": include_fees, "insurance": insurance, "publication_id": publication_id, "reference": reference, "transport_mode": transport_mode},
+            "/v2/estimates/entry",
+            model=Declaration,
+            body={"lines": lines, "as_of": as_of, "entry_type": entry_type, "facts": facts, "freight": freight, "include_fees": include_fees, "insurance": insurance, "label": label, "publication_id": publication_id, "reference": reference, "save": save, "transport_mode": transport_mode},
             idempotent=True,
             idempotency_key=idempotency_key,
         )
@@ -255,7 +267,7 @@ class Operations:
         that covers it begins or ends, and on each day an incident or a notice not yet read
         begins or stops withholding its estimate, over the period asked, with the rules approved
         today. Counted as one request, whatever its number of points, unless no point gives a
-        figure of the duty (a question without any duty amount or rate).
+        figure of the duty.
 
         Args:
             hts: The HTS code of the goods: 4, 6, 8 or 10 digits, dots and spaces ignored. A
@@ -266,25 +278,26 @@ class Operations:
             customs_value: Customs value in US dollars: the transaction value declared, not a
                 retail price. Unset: the duty rate is given, and an amount only where the duty
                 does not depend on the value.
-            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value;
-                an informal one, the fixed informal fee.
-            facts: Answers to the questions of the facts catalogue (GET /v1/facts), by name. A
-                name outside the catalogue is reported in the result and never used.
+            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value.
+                An informal entry pays a fixed fee the estimate does not calculate: it gives no
+                fees.
+            facts: Answers to the questions of the facts catalogue (GET /v2/facts), by name. A
+                name outside the catalogue is said in warnings and never used.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             from_: First day of the period. Unset: the first edition the service holds.
             include_fees: Count the entry fees (MPF, HMF) of a declaration of this product
-                alone; the landed cost includes them only then. The MPF is charged once on a
-                declaration: for several products entered together, use POST
-                /v1/estimates/entry.
+                alone. Each product is estimated as its own declaration: the MPF is charged once
+                on a declaration, so for several products entered together use POST
+                /v2/estimates/entry.
             insurance: Insurance of the shipment in US dollars: no duty on it, it adds to the
                 landed cost.
             preference: A trade agreement's symbol from the HTS special column (S for USMCA, KR
-                for KORUS…; GET /v1/agreements). Giving it declares that the goods meet its
+                for KORUS…; GET /v2/agreements). Giving it declares that the goods meet its
                 rules of origin and that you hold the proof.
             quantities: Quantities in the units a duty counts (kg, l, item, dozen, pair,
-                proof_liter…), nonnegative. A result names the quantity it needs in
-                required_fields ("quantities.kg").
+                proof_liter…), nonnegative. An answer names the quantity it needs in missing
+                ("quantities.kg").
             through: Last day of the period, at most today. Unset: today.
             transport_mode: How the goods arrive; by sea they also pay the harbor maintenance
                 fee (HMF). Unset: land for goods of Canada or Mexico, ocean otherwise.
@@ -293,7 +306,7 @@ class Operations:
         """
         return self._request(
             "POST",
-            "/v1/estimates/history",
+            "/v2/estimates/history",
             model=HistoryResult,
             body={"hts": hts, "origin": origin, "customs_value": customs_value, "entry_type": entry_type, "facts": facts, "freight": freight, "from": from_, "include_fees": include_fees, "insurance": insurance, "preference": preference, "quantities": quantities, "through": through, "transport_mode": transport_mode},
             idempotent=True,
@@ -306,13 +319,13 @@ class Operations:
         """List the questions an estimate may ask.
 
         The facts catalogue: each question a measure may depend on, by the name to answer it
-        with in facts, its type, its choices and its ordinary case. A result lists the ones it
-        needs in input_guidance, and those it assumed in assumptions. Needs the read permission;
-        not counted.
+        with in facts, its type, its choices and its ordinary case. An answer names the ones it
+        needs in missing, and those it rests on in facts. Needs the read permission; not
+        counted.
         """
         return self._request(
             "GET",
-            "/v1/facts",
+            "/v2/facts",
             model=FactList,
         )
 
@@ -338,7 +351,7 @@ class Operations:
         """
         return self._request(
             "GET",
-            "/v1/hts",
+            "/v2/hts",
             model=HtsSearch,
             query={"q": q, "chapter": chapter, "offset": offset, "limit": limit},
         )
@@ -357,7 +370,7 @@ class Operations:
         """
         return self._request(
             "GET",
-            f"/v1/hts/{quote(code, safe='')}",
+            f"/v2/hts/{quote(code, safe='')}",
             model=HtsDetail,
         )
 
@@ -378,40 +391,9 @@ class Operations:
         """
         return self._request(
             "GET",
-            "/v1/saved-estimates",
+            "/v2/saved-estimates",
             model=SavedList,
             query={"offset": offset, "limit": limit},
-        )
-
-    def save_estimate(
-        self,
-        *,
-        entry: EntryInput | None = None,
-        estimate: EstimateInput | None = None,
-        label: str | None = None,
-        idempotency_key: str | None = None,
-    ) -> Saved:
-        """Calculate and save an estimate.
-
-        Calculate one product (estimate) or a declaration (entry) as POST /v1/estimates or POST
-        /v1/estimates/entry would, and save it: only a saved estimate can be replayed, reported
-        or notified in an incident. Needs the calculate permission; counted as the estimate is.
-        Whichever is saved, an Idempotency-Key holds for one request of this route.
-
-        Args:
-            entry: A declaration to calculate and save, instead of estimate.
-            estimate: One product to calculate and save. Give estimate or entry, not both.
-            label: A name for the saved estimate.
-            idempotency_key: Makes a retry of this call safe; a new one is generated for each
-                call otherwise.
-        """
-        return self._request(
-            "POST",
-            "/v1/saved-estimates",
-            model=Saved,
-            body={"entry": entry, "estimate": estimate, "label": label},
-            idempotent=True,
-            idempotency_key=idempotency_key,
         )
 
     def get_saved_estimate(
@@ -429,23 +411,22 @@ class Operations:
         """
         return self._request(
             "GET",
-            f"/v1/saved-estimates/{quote(id, safe='')}",
+            f"/v2/saved-estimates/{quote(id, safe='')}",
             model=SavedDetail,
         )
 
     def get_status(
         self,
     ) -> Status:
-        """Read the status and the coverage of the data.
+        """Read the status of the data.
 
-        Freshness and verification of the data, the share of estimates withheld, the
-        publications and the engine in service, and what is covered: Chapter 99 positions and
-        their status, historical periods, base rates, agreements, fees, and what is out of
-        scope. No key needed; the pages /status/ and /coverage/ read the same sources.
+        Whether the data can be relied on now, which publication and engine answer, when the
+        official sources were last checked, the first day covered and the wrong rates being
+        corrected. No key needed; the pages /status/ and /coverage/ say more.
         """
         return self._request(
             "GET",
-            "/v1/status",
+            "/v2/status",
             model=Status,
             auth=False,
         )
@@ -480,7 +461,7 @@ class AsyncOperations:
         """
         return await self._request(
             "GET",
-            "/v1/agreements",
+            "/v2/agreements",
             model=AgreementList,
         )
 
@@ -496,22 +477,21 @@ class AsyncOperations:
         freight: int | float | Decimal | str | None = None,
         include_fees: bool | None = None,
         insurance: int | float | Decimal | str | None = None,
+        label: str | None = None,
         preference: str | None = None,
         publication_id: str | None = None,
         quantities: Mapping[str, int | float | Decimal | str] | None = None,
+        save: bool | None = None,
         transport_mode: Literal["air", "ocean", "land"] | None = None,
         idempotency_key: str | None = None,
-    ) -> CalculationResult:
+    ) -> Estimate:
         """Estimate one product.
 
         Every US duty and fee that applies to one product at a date, each with its official
-        source. Without a customs value, the duty rate. Not saved: an unsaved estimate cannot be
-        replayed, reported or notified in an incident; save it with POST /v1/saved-estimates.
-        Needs the calculate permission; counted in the quota unless it gives no figure of the
-        duty: a question asked without any duty amount or rate (status needs_information), a
-        code the tariff does not have or that names no product, a regime the service does not
-        calculate. A question that gives the duty of each answer (scenarios), their bounds or
-        the subtotal already known is counted.
+        source. Without a customs value, the duty rate when the duties are percentages. When
+        something is missing to give a figure, the answer says what to send again. Send save to
+        keep the estimate. Needs the calculate permission; counted in the quota unless it gives
+        no figure of the duty: status needs_information, not_found, not_covered or unsupported.
 
         Args:
             hts: The HTS code of the goods: 4, 6, 8 or 10 digits, dots and spaces ignored. A
@@ -526,26 +506,33 @@ class AsyncOperations:
             customs_value: Customs value in US dollars: the transaction value declared, not a
                 retail price. Unset: the duty rate is given, and an amount only where the duty
                 does not depend on the value.
-            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value;
-                an informal one, the fixed informal fee.
-            facts: Answers to the questions of the facts catalogue (GET /v1/facts), by name. A
-                name outside the catalogue is reported in the result and never used.
+            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value.
+                An informal entry pays a fixed fee the estimate does not calculate: it gives no
+                fees.
+            facts: Answers to the questions of the facts catalogue (GET /v2/facts), by name. A
+                name outside the catalogue is said in warnings and never used.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             include_fees: Count the entry fees (MPF, HMF) of a declaration of this product
-                alone; the landed cost includes them only then. The MPF is charged once on a
-                declaration: for several products entered together, use POST
-                /v1/estimates/entry.
+                alone. Each product is estimated as its own declaration: the MPF is charged once
+                on a declaration, so for several products entered together use POST
+                /v2/estimates/entry.
             insurance: Insurance of the shipment in US dollars: no duty on it, it adds to the
                 landed cost.
+            label: A name for the saved estimate; needs save.
             preference: A trade agreement's symbol from the HTS special column (S for USMCA, KR
-                for KORUS…; GET /v1/agreements). Giving it declares that the goods meet its
+                for KORUS…; GET /v2/agreements). Giving it declares that the goods meet its
                 rules of origin and that you hold the proof.
-            publication_id: Calculate with this publication of the rules rather than the one in
-                force on the date: a saved result's publication_id replays it.
+            publication_id: Calculate with this publication of the rules instead of the one in
+                service on that date: the data.publication_id of an earlier answer gives the
+                same result again, as long as the engine has not changed.
             quantities: Quantities in the units a duty counts (kg, l, item, dozen, pair,
-                proof_liter…), nonnegative. A result names the quantity it needs in
-                required_fields ("quantities.kg").
+                proof_liter…), nonnegative. An answer names the quantity it needs in missing
+                ("quantities.kg").
+            save: Save the estimate: only a saved estimate keeps its detail, is reported, and is
+                notified if a rate proves wrong. An answer without a figure is not saved. Send
+                an Idempotency-Key: without one, a request sent again after a timeout saves
+                twice.
             transport_mode: How the goods arrive; by sea they also pay the harbor maintenance
                 fee (HMF). Unset: land for goods of Canada or Mexico, ocean otherwise.
             idempotency_key: Makes a retry of this call safe; a new one is generated for each
@@ -553,9 +540,9 @@ class AsyncOperations:
         """
         return await self._request(
             "POST",
-            "/v1/estimates",
-            model=CalculationResult,
-            body={"hts": hts, "origin": origin, "as_of": as_of, "customs_value": customs_value, "entry_type": entry_type, "facts": facts, "freight": freight, "include_fees": include_fees, "insurance": insurance, "preference": preference, "publication_id": publication_id, "quantities": quantities, "transport_mode": transport_mode},
+            "/v2/estimates",
+            model=Estimate,
+            body={"hts": hts, "origin": origin, "as_of": as_of, "customs_value": customs_value, "entry_type": entry_type, "facts": facts, "freight": freight, "include_fees": include_fees, "insurance": insurance, "label": label, "preference": preference, "publication_id": publication_id, "quantities": quantities, "save": save, "transport_mode": transport_mode},
             idempotent=True,
             idempotency_key=idempotency_key,
         )
@@ -569,26 +556,28 @@ class AsyncOperations:
     ) -> BatchResult:
         """Estimate up to 200 products.
 
-        Each item calculated on its own, as POST /v1/estimates would, in the order given. An
-        invalid item refuses the whole batch (422, error.fields naming items.<index>.<field>);
-        an item that cannot be calculated (a date no edition covers) has its own error in
-        results, the others are calculated. The batch's publication_id, if any, holds for every
-        item. Counted as one request, whatever its number of items, unless none of them gives a
-        figure of the duty (questions without any duty amount or rate, and errors, only). When
-        the data is unavailable for every item, the batch is a 503 to send again, neither
-        counted nor kept for its Idempotency-Key; when only for some, they have their error
-        (data_unavailable) in results: send those items again.
+        Each item calculated on its own, as POST /v2/estimates would, in the order given: each
+        is its own declaration, so do not add their fees up; for several products entered
+        together, use POST /v2/estimates/entry. An invalid item refuses the whole batch (422,
+        error.fields naming items.<index>.<field>); an item that cannot be calculated (a date no
+        edition covers) has its own error in results, the others are calculated. The batch's
+        publication_id, if any, holds for every item. Counted as one request, whatever its
+        number of items, unless none of them gives a figure of the duty. When the data is
+        unavailable for every item, the batch is a 503 to send again, neither counted nor kept
+        for its Idempotency-Key; when only for some, they have their error (data_unavailable) in
+        results: send those items again.
 
         Args:
             items: The products, each calculated on its own.
-            publication_id: Calculate with this publication of the rules rather than the one in
-                force on the date: a saved result's publication_id replays it.
+            publication_id: Calculate with this publication of the rules instead of the one in
+                service on that date: the data.publication_id of an earlier answer gives the
+                same result again, as long as the engine has not changed.
             idempotency_key: Makes a retry of this call safe; a new one is generated for each
                 call otherwise.
         """
         return await self._request(
             "POST",
-            "/v1/estimates/batch",
+            "/v2/estimates/batch",
             model=BatchResult,
             body={"items": items, "publication_id": publication_id},
             idempotent=True,
@@ -605,18 +594,18 @@ class AsyncOperations:
         freight: int | float | Decimal | str | None = None,
         include_fees: bool | None = None,
         insurance: int | float | Decimal | str | None = None,
+        label: str | None = None,
         publication_id: str | None = None,
         reference: str | None = None,
+        save: bool | None = None,
         transport_mode: Literal["air", "ocean", "land"] | None = None,
         idempotency_key: str | None = None,
-    ) -> EntryResult:
+    ) -> Declaration:
         """Estimate a whole import declaration.
 
         Every line, then the MPF and the HMF once on the declaration: adding the estimates of
-        the lines of one declaration gives a wrong MPF. Not saved: save it with POST /v1/saved-
-        estimates (entry) to replay or report it. Counted as one request, whatever its number of
-        lines, unless it gives no figure of the duty (a question without any duty amount or
-        rate).
+        the lines of one declaration gives a wrong MPF. Send save to keep the estimate. Counted
+        as one request, whatever its number of lines, unless it gives no figure of the duty.
 
         Args:
             lines: The lines of the declaration, each a product.
@@ -624,18 +613,25 @@ class AsyncOperations:
                 ("2026-04-05"); or, on a day when a measure takes effect at a stated hour, the
                 instant of entry with its UTC offset ("2026-04-05T00:01:00-04:00"). Unset:
                 today.
-            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value;
-                an informal one, the fixed informal fee.
-            facts: Answers that hold for the whole declaration (GET /v1/facts, scope entry or
+            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value.
+                An informal entry pays a fixed fee the estimate does not calculate: it gives no
+                fees.
+            facts: Answers that hold for the whole declaration (GET /v2/facts, scope entry or
                 shipment).
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             include_fees: Count the entry fees (MPF, HMF) of the declaration.
             insurance: Insurance of the shipment in US dollars: no duty on it, it adds to the
                 landed cost.
-            publication_id: Calculate with this publication of the rules rather than the one in
-                force on the date: a saved result's publication_id replays it.
+            label: A name for the saved estimate; needs save.
+            publication_id: Calculate with this publication of the rules instead of the one in
+                service on that date: the data.publication_id of an earlier answer gives the
+                same result again, as long as the engine has not changed.
             reference: Your reference for the declaration.
+            save: Save the estimate: only a saved estimate keeps its detail, is reported, and is
+                notified if a rate proves wrong. An answer without a figure is not saved. Send
+                an Idempotency-Key: without one, a request sent again after a timeout saves
+                twice.
             transport_mode: How the goods arrive; by sea they also pay the harbor maintenance
                 fee (HMF). Unset: land for goods of Canada or Mexico, ocean otherwise.
             idempotency_key: Makes a retry of this call safe; a new one is generated for each
@@ -643,9 +639,9 @@ class AsyncOperations:
         """
         return await self._request(
             "POST",
-            "/v1/estimates/entry",
-            model=EntryResult,
-            body={"lines": lines, "as_of": as_of, "entry_type": entry_type, "facts": facts, "freight": freight, "include_fees": include_fees, "insurance": insurance, "publication_id": publication_id, "reference": reference, "transport_mode": transport_mode},
+            "/v2/estimates/entry",
+            model=Declaration,
+            body={"lines": lines, "as_of": as_of, "entry_type": entry_type, "facts": facts, "freight": freight, "include_fees": include_fees, "insurance": insurance, "label": label, "publication_id": publication_id, "reference": reference, "save": save, "transport_mode": transport_mode},
             idempotent=True,
             idempotency_key=idempotency_key,
         )
@@ -674,7 +670,7 @@ class AsyncOperations:
         that covers it begins or ends, and on each day an incident or a notice not yet read
         begins or stops withholding its estimate, over the period asked, with the rules approved
         today. Counted as one request, whatever its number of points, unless no point gives a
-        figure of the duty (a question without any duty amount or rate).
+        figure of the duty.
 
         Args:
             hts: The HTS code of the goods: 4, 6, 8 or 10 digits, dots and spaces ignored. A
@@ -685,25 +681,26 @@ class AsyncOperations:
             customs_value: Customs value in US dollars: the transaction value declared, not a
                 retail price. Unset: the duty rate is given, and an amount only where the duty
                 does not depend on the value.
-            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value;
-                an informal one, the fixed informal fee.
-            facts: Answers to the questions of the facts catalogue (GET /v1/facts), by name. A
-                name outside the catalogue is reported in the result and never used.
+            entry_type: A formal entry pays the merchandise processing fee (MPF) on its value.
+                An informal entry pays a fixed fee the estimate does not calculate: it gives no
+                fees.
+            facts: Answers to the questions of the facts catalogue (GET /v2/facts), by name. A
+                name outside the catalogue is said in warnings and never used.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             from_: First day of the period. Unset: the first edition the service holds.
             include_fees: Count the entry fees (MPF, HMF) of a declaration of this product
-                alone; the landed cost includes them only then. The MPF is charged once on a
-                declaration: for several products entered together, use POST
-                /v1/estimates/entry.
+                alone. Each product is estimated as its own declaration: the MPF is charged once
+                on a declaration, so for several products entered together use POST
+                /v2/estimates/entry.
             insurance: Insurance of the shipment in US dollars: no duty on it, it adds to the
                 landed cost.
             preference: A trade agreement's symbol from the HTS special column (S for USMCA, KR
-                for KORUS…; GET /v1/agreements). Giving it declares that the goods meet its
+                for KORUS…; GET /v2/agreements). Giving it declares that the goods meet its
                 rules of origin and that you hold the proof.
             quantities: Quantities in the units a duty counts (kg, l, item, dozen, pair,
-                proof_liter…), nonnegative. A result names the quantity it needs in
-                required_fields ("quantities.kg").
+                proof_liter…), nonnegative. An answer names the quantity it needs in missing
+                ("quantities.kg").
             through: Last day of the period, at most today. Unset: today.
             transport_mode: How the goods arrive; by sea they also pay the harbor maintenance
                 fee (HMF). Unset: land for goods of Canada or Mexico, ocean otherwise.
@@ -712,7 +709,7 @@ class AsyncOperations:
         """
         return await self._request(
             "POST",
-            "/v1/estimates/history",
+            "/v2/estimates/history",
             model=HistoryResult,
             body={"hts": hts, "origin": origin, "customs_value": customs_value, "entry_type": entry_type, "facts": facts, "freight": freight, "from": from_, "include_fees": include_fees, "insurance": insurance, "preference": preference, "quantities": quantities, "through": through, "transport_mode": transport_mode},
             idempotent=True,
@@ -725,13 +722,13 @@ class AsyncOperations:
         """List the questions an estimate may ask.
 
         The facts catalogue: each question a measure may depend on, by the name to answer it
-        with in facts, its type, its choices and its ordinary case. A result lists the ones it
-        needs in input_guidance, and those it assumed in assumptions. Needs the read permission;
-        not counted.
+        with in facts, its type, its choices and its ordinary case. An answer names the ones it
+        needs in missing, and those it rests on in facts. Needs the read permission; not
+        counted.
         """
         return await self._request(
             "GET",
-            "/v1/facts",
+            "/v2/facts",
             model=FactList,
         )
 
@@ -757,7 +754,7 @@ class AsyncOperations:
         """
         return await self._request(
             "GET",
-            "/v1/hts",
+            "/v2/hts",
             model=HtsSearch,
             query={"q": q, "chapter": chapter, "offset": offset, "limit": limit},
         )
@@ -776,7 +773,7 @@ class AsyncOperations:
         """
         return await self._request(
             "GET",
-            f"/v1/hts/{quote(code, safe='')}",
+            f"/v2/hts/{quote(code, safe='')}",
             model=HtsDetail,
         )
 
@@ -797,40 +794,9 @@ class AsyncOperations:
         """
         return await self._request(
             "GET",
-            "/v1/saved-estimates",
+            "/v2/saved-estimates",
             model=SavedList,
             query={"offset": offset, "limit": limit},
-        )
-
-    async def save_estimate(
-        self,
-        *,
-        entry: EntryInput | None = None,
-        estimate: EstimateInput | None = None,
-        label: str | None = None,
-        idempotency_key: str | None = None,
-    ) -> Saved:
-        """Calculate and save an estimate.
-
-        Calculate one product (estimate) or a declaration (entry) as POST /v1/estimates or POST
-        /v1/estimates/entry would, and save it: only a saved estimate can be replayed, reported
-        or notified in an incident. Needs the calculate permission; counted as the estimate is.
-        Whichever is saved, an Idempotency-Key holds for one request of this route.
-
-        Args:
-            entry: A declaration to calculate and save, instead of estimate.
-            estimate: One product to calculate and save. Give estimate or entry, not both.
-            label: A name for the saved estimate.
-            idempotency_key: Makes a retry of this call safe; a new one is generated for each
-                call otherwise.
-        """
-        return await self._request(
-            "POST",
-            "/v1/saved-estimates",
-            model=Saved,
-            body={"entry": entry, "estimate": estimate, "label": label},
-            idempotent=True,
-            idempotency_key=idempotency_key,
         )
 
     async def get_saved_estimate(
@@ -848,23 +814,22 @@ class AsyncOperations:
         """
         return await self._request(
             "GET",
-            f"/v1/saved-estimates/{quote(id, safe='')}",
+            f"/v2/saved-estimates/{quote(id, safe='')}",
             model=SavedDetail,
         )
 
     async def get_status(
         self,
     ) -> Status:
-        """Read the status and the coverage of the data.
+        """Read the status of the data.
 
-        Freshness and verification of the data, the share of estimates withheld, the
-        publications and the engine in service, and what is covered: Chapter 99 positions and
-        their status, historical periods, base rates, agreements, fees, and what is out of
-        scope. No key needed; the pages /status/ and /coverage/ read the same sources.
+        Whether the data can be relied on now, which publication and engine answer, when the
+        official sources were last checked, the first day covered and the wrong rates being
+        corrected. No key needed; the pages /status/ and /coverage/ say more.
         """
         return await self._request(
             "GET",
-            "/v1/status",
+            "/v2/status",
             model=Status,
             auth=False,
         )

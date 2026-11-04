@@ -34,126 +34,37 @@ class BatchItem(_BatchItemRequired, total=False):
     the duty rate is given, and an amount only where the duty does not depend on the value.
     """
     entry_type: Literal["formal", "informal"]
-    """A formal entry pays the merchandise processing fee (MPF) on its value; an informal one,
-    the fixed informal fee.
+    """A formal entry pays the merchandise processing fee (MPF) on its value. An informal entry
+    pays a fixed fee the estimate does not calculate: it gives no fees.
     """
     facts: Mapping[str, int | float | Decimal | str | bool]
-    """Answers to the questions of the facts catalogue (GET /v1/facts), by name. A name outside
-    the catalogue is reported in the result and never used.
+    """Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
+    the catalogue is said in warnings and never used.
     """
     freight: int | float | Decimal | str
     """International freight in US dollars: no duty on it, it adds to the landed cost."""
     include_fees: bool
-    """Count the entry fees (MPF, HMF) of a declaration of this product alone; the landed cost
-    includes them only then. The MPF is charged once on a declaration: for several products
-    entered together, use POST /v1/estimates/entry.
+    """Count the entry fees (MPF, HMF) of a declaration of this product alone. Each product is
+    estimated as its own declaration: the MPF is charged once on a declaration, so for
+    several products entered together use POST /v2/estimates/entry.
     """
     insurance: int | float | Decimal | str
     """Insurance of the shipment in US dollars: no duty on it, it adds to the landed cost."""
+    label: str
+    """A name for the saved estimate; needs save."""
     preference: str | None
     """A trade agreement's symbol from the HTS special column (S for USMCA, KR for KORUS…; GET
-    /v1/agreements). Giving it declares that the goods meet its rules of origin and that you
+    /v2/agreements). Giving it declares that the goods meet its rules of origin and that you
     hold the proof.
     """
     quantities: Mapping[str, int | float | Decimal | str]
     """Quantities in the units a duty counts (kg, l, item, dozen, pair, proof_liter…),
-    nonnegative. A result names the quantity it needs in required_fields ("quantities.kg").
+    nonnegative. An answer names the quantity it needs in missing ("quantities.kg").
     """
-    transport_mode: Literal["air", "ocean", "land"] | None
-    """How the goods arrive; by sea they also pay the harbor maintenance fee (HMF). Unset: land
-    for goods of Canada or Mexico, ocean otherwise.
-    """
-
-
-class _EntryInputRequired(TypedDict):
-    lines: Sequence[LineInput]
-    """The lines of the declaration, each a product."""
-
-
-class EntryInput(_EntryInputRequired, total=False):
-    """A whole import declaration: every line, then the MPF and the HMF once on the
-    declaration. POST /v1/estimates/entry.
-    """
-    as_of: str | date | datetime | None
-    """When the goods are entered for consumption. A day, in New York time ("2026-04-05"); or,
-    on a day when a measure takes effect at a stated hour, the instant of entry with its UTC
-    offset ("2026-04-05T00:01:00-04:00"). Unset: today.
-    """
-    entry_type: Literal["formal", "informal"]
-    """A formal entry pays the merchandise processing fee (MPF) on its value; an informal one,
-    the fixed informal fee.
-    """
-    facts: Mapping[str, int | float | Decimal | str | bool]
-    """Answers that hold for the whole declaration (GET /v1/facts, scope entry or shipment)."""
-    freight: int | float | Decimal | str
-    """International freight in US dollars: no duty on it, it adds to the landed cost."""
-    include_fees: bool
-    """Count the entry fees (MPF, HMF) of the declaration."""
-    insurance: int | float | Decimal | str
-    """Insurance of the shipment in US dollars: no duty on it, it adds to the landed cost."""
-    publication_id: str | None
-    """Calculate with this publication of the rules rather than the one in force on the date: a
-    saved result's publication_id replays it.
-    """
-    reference: str
-    """Your reference for the declaration."""
-    transport_mode: Literal["air", "ocean", "land"] | None
-    """How the goods arrive; by sea they also pay the harbor maintenance fee (HMF). Unset: land
-    for goods of Canada or Mexico, ocean otherwise.
-    """
-
-
-class _EstimateInputRequired(TypedDict):
-    hts: str
-    """The HTS code of the goods: 4, 6, 8 or 10 digits, dots and spaces ignored. A rate needs
-    the 10-digit statistical line or its 8-digit subheading.
-    """
-    origin: str
-    """Country of origin: where the goods were produced, not where they ship from. ISO 3166-1
-    alpha-2 (XK for Kosovo), or a code U.S. Customs files with (BU, GZ, KV, WE).
-    """
-
-
-class EstimateInput(_EstimateInputRequired, total=False):
-    """One product at a date: POST /v1/estimates."""
-    as_of: str | date | datetime | None
-    """When the goods are entered for consumption. A day, in New York time ("2026-04-05"); or,
-    on a day when a measure takes effect at a stated hour, the instant of entry with its UTC
-    offset ("2026-04-05T00:01:00-04:00"). Unset: today.
-    """
-    customs_value: int | float | Decimal | str | None
-    """Customs value in US dollars: the transaction value declared, not a retail price. Unset:
-    the duty rate is given, and an amount only where the duty does not depend on the value.
-    """
-    entry_type: Literal["formal", "informal"]
-    """A formal entry pays the merchandise processing fee (MPF) on its value; an informal one,
-    the fixed informal fee.
-    """
-    facts: Mapping[str, int | float | Decimal | str | bool]
-    """Answers to the questions of the facts catalogue (GET /v1/facts), by name. A name outside
-    the catalogue is reported in the result and never used.
-    """
-    freight: int | float | Decimal | str
-    """International freight in US dollars: no duty on it, it adds to the landed cost."""
-    include_fees: bool
-    """Count the entry fees (MPF, HMF) of a declaration of this product alone; the landed cost
-    includes them only then. The MPF is charged once on a declaration: for several products
-    entered together, use POST /v1/estimates/entry.
-    """
-    insurance: int | float | Decimal | str
-    """Insurance of the shipment in US dollars: no duty on it, it adds to the landed cost."""
-    preference: str | None
-    """A trade agreement's symbol from the HTS special column (S for USMCA, KR for KORUS…; GET
-    /v1/agreements). Giving it declares that the goods meet its rules of origin and that you
-    hold the proof.
-    """
-    publication_id: str | None
-    """Calculate with this publication of the rules rather than the one in force on the date: a
-    saved result's publication_id replays it.
-    """
-    quantities: Mapping[str, int | float | Decimal | str]
-    """Quantities in the units a duty counts (kg, l, item, dozen, pair, proof_liter…),
-    nonnegative. A result names the quantity it needs in required_fields ("quantities.kg").
+    save: bool
+    """Save the estimate: only a saved estimate keeps its detail, is reported, and is notified
+    if a rate proves wrong. An answer without a figure is not saved. Send an Idempotency-
+    Key: without one, a request sent again after a timeout saves twice.
     """
     transport_mode: Literal["air", "ocean", "land"] | None
     """How the goods arrive; by sea they also pay the harbor maintenance fee (HMF). Unset: land
@@ -179,17 +90,17 @@ class LineInput(_LineInputRequired, total=False):
     the duty rate is given, and an amount only where the duty does not depend on the value.
     """
     facts: Mapping[str, int | float | Decimal | str | bool]
-    """Answers to the questions of the facts catalogue (GET /v1/facts), by name. A name outside
-    the catalogue is reported in the result and never used.
+    """Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
+    the catalogue is said in warnings and never used.
     """
     preference: str | None
     """A trade agreement's symbol from the HTS special column (S for USMCA, KR for KORUS…; GET
-    /v1/agreements). Giving it declares that the goods meet its rules of origin and that you
+    /v2/agreements). Giving it declares that the goods meet its rules of origin and that you
     hold the proof.
     """
     quantities: Mapping[str, int | float | Decimal | str]
     """Quantities in the units a duty counts (kg, l, item, dozen, pair, proof_liter…),
-    nonnegative. A result names the quantity it needs in required_fields ("quantities.kg").
+    nonnegative. An answer names the quantity it needs in missing ("quantities.kg").
     """
     reference: str
     """Your reference for the line."""
@@ -231,40 +142,279 @@ class AgreementList(Model):
     """Where the tariff that names them is published."""
 
 
+class AuditedDeclaration(Model):
+    """A saved declaration's answer, with the detail behind it."""
+
+    _fields: ClassVar[frozenset[str]] = frozenset(['as_of', 'audit', 'data', 'entry_type', 'estimated_duty', 'estimated_duty_rate', 'estimated_fees', 'estimated_landed_cost', 'facts', 'fees', 'freight', 'insurance', 'last_approved', 'lines', 'reference', 'status', 'transport_mode', 'warnings'])
+    _required: ClassVar[frozenset[str]] = frozenset(['as_of', 'audit', 'data', 'entry_type', 'lines', 'status', 'transport_mode'])
+    _nested: ClassVar[dict[str, Any]] = {'data': 'Data', 'fees': ['EntryFee'], 'last_approved': 'LastApproved', 'lines': ['AuditedLine']}
+
+    as_of: str
+    """The day calculated, in New York."""
+
+    audit: dict[str, Any]
+    """The detail behind the answer, kept with a saved estimate: the measures examined with the
+    decision and the reason of each, every duty and fee in full, the answers supposed and
+    what each other answer gives, the sources, the inputs as calculated and the versions.
+    """
+
+    data: Data
+
+    entry_type: str | None
+    """formal, unless you send informal. An informal entry has no calculated fees."""
+
+    estimated_duty: str | None
+    """The duties of every line, in US dollars."""
+
+    estimated_duty_rate: str | None
+    """Those duties as a fraction of the values."""
+
+    estimated_fees: str | None
+    """The entry fees of the declaration, in US dollars."""
+
+    estimated_landed_cost: str | None
+    """Values, duties, fees, freight and insurance, in US dollars."""
+
+    facts: dict[str, Any] | None
+    """The exemption its fees rest on, when one was declared for it."""
+
+    fees: list[EntryFee] | None
+    """Each entry fee, with its amount and source."""
+
+    freight: str | None
+    """The freight you sent, in US dollars."""
+
+    insurance: str | None
+    """The insurance you sent, in US dollars."""
+
+    last_approved: LastApproved | None
+    """While a duty is withheld, the last result established without it."""
+
+    lines: list[AuditedLine]
+    """Each line, in the order sent, with its detail."""
+
+    reference: str | None
+    """Your reference for it, when you sent one."""
+
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """calculated: every duty is established; without a customs value, a duty that does not
+    need it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+    rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the
+    value for the amounts. needs_information: something is missing to give a figure, and
+    missing says what to send again, on each line of a declaration. partial: a duty is
+    withheld for now, and withheld says which; no total is given. unsupported: a regime or a
+    rate the service does not calculate. not_found: a code the tariff does not have, or that
+    names no product. not_covered: the date or the chapter is outside the data.
+    """
+
+    transport_mode: str | None
+    """How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean
+    otherwise. By sea they pay the HMF.
+    """
+
+    warnings: list[str] | None
+    """What the amounts do not cover, in words."""
+
+
+class AuditedEstimate(Model):
+    """A saved estimate's answer, with the detail behind it."""
+
+    _fields: ClassVar[frozenset[str]] = frozenset(['as_of', 'audit', 'candidates', 'customs_value', 'data', 'description', 'duties', 'entry_type', 'estimated_duty', 'estimated_duty_rate', 'estimated_fees', 'estimated_landed_cost', 'facts', 'fees', 'freight', 'hts', 'insurance', 'last_approved', 'missing', 'origin', 'quantities', 'status', 'transport_mode', 'warnings', 'withheld'])
+    _required: ClassVar[frozenset[str]] = frozenset(['as_of', 'audit', 'customs_value', 'data', 'description', 'entry_type', 'hts', 'origin', 'status', 'transport_mode'])
+    _nested: ClassVar[dict[str, Any]] = {'candidates': ['Candidate'], 'data': 'Data', 'duties': ['Duty'], 'fees': ['EntryFee'], 'last_approved': 'LastApproved', 'missing': ['MissingField'], 'withheld': ['Withheld']}
+
+    as_of: str
+    """The day calculated, in New York."""
+
+    audit: dict[str, Any]
+    """The detail behind the answer, kept with a saved estimate: the measures examined with the
+    decision and the reason of each, every duty and fee in full, the answers supposed and
+    what each other answer gives, the sources, the inputs as calculated and the versions.
+    """
+
+    candidates: list[Candidate] | None
+    """The longer codes under a short one: send one of them as hts."""
+
+    customs_value: str | None
+    """The customs value you sent, in US dollars; null without one."""
+
+    data: Data
+
+    description: str | None
+    """What the code covers, in the words of the tariff."""
+
+    duties: list[Duty] | None
+    """Each duty, with its rate, amount and source."""
+
+    entry_type: str | None
+    """formal, unless you send informal. An informal entry has no calculated fees."""
+
+    estimated_duty: str | None
+    """All the duties, in US dollars. Null is unknown, never zero."""
+
+    estimated_duty_rate: str | None
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
+    of the rates; null when a duty is not a percentage, or while a duty is withheld.
+    """
+
+    estimated_fees: str | None
+    """All the entry fees, in US dollars; null when one cannot be calculated, or with
+    include_fees false.
+    """
+
+    estimated_landed_cost: str | None
+    """Customs value, duties, fees, freight and insurance, in US dollars; null when the value
+    or a fee asked for is not known.
+    """
+
+    facts: dict[str, Any] | None
+    """The answers this estimate rests on, those you sent and those supposed: the ordinary case
+    of each question a rule asks of these goods. Send any of them in facts to change the
+    estimate; GET /v2/facts gives each one's question and answers.
+    """
+
+    fees: list[EntryFee] | None
+    """Each entry fee, with its amount and source."""
+
+    freight: str | None
+    """The freight you sent, in US dollars."""
+
+    hts: str
+    """The HTS code, in digits."""
+
+    insurance: str | None
+    """The insurance you sent, in US dollars."""
+
+    last_approved: LastApproved | None
+    """While a duty is withheld, the last result established without it."""
+
+    missing: list[MissingField] | None
+    """What to send again for a figure, with status needs_information."""
+
+    origin: str
+    """The country of origin."""
+
+    quantities: dict[str, Any] | None
+    """The quantities you sent."""
+
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """calculated: every duty is established; without a customs value, a duty that does not
+    need it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+    rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the
+    value for the amounts. needs_information: something is missing to give a figure, and
+    missing says what to send again, on each line of a declaration. partial: a duty is
+    withheld for now, and withheld says which; no total is given. unsupported: a regime or a
+    rate the service does not calculate. not_found: a code the tariff does not have, or that
+    names no product. not_covered: the date or the chapter is outside the data.
+    """
+
+    transport_mode: str | None
+    """How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean
+    otherwise. By sea they pay the HMF.
+    """
+
+    warnings: list[str] | None
+    """What the amounts do not cover, in words."""
+
+    withheld: list[Withheld] | None
+    """What the total leaves out for now."""
+
+
+class AuditedLine(Model):
+    """One line of a saved declaration, with the detail behind it."""
+
+    _fields: ClassVar[frozenset[str]] = frozenset(['audit', 'candidates', 'customs_value', 'description', 'duties', 'estimated_duty', 'estimated_duty_rate', 'facts', 'hts', 'missing', 'origin', 'quantities', 'reference', 'status', 'warnings', 'withheld'])
+    _required: ClassVar[frozenset[str]] = frozenset(['audit', 'customs_value', 'description', 'hts', 'origin', 'status'])
+    _nested: ClassVar[dict[str, Any]] = {'candidates': ['Candidate'], 'duties': ['Duty'], 'missing': ['MissingField'], 'withheld': ['Withheld']}
+
+    audit: dict[str, Any]
+    """The detail behind the answer, kept with a saved estimate: the measures examined with the
+    decision and the reason of each, every duty and fee in full, the answers supposed and
+    what each other answer gives, the sources, the inputs as calculated and the versions.
+    """
+
+    candidates: list[Candidate] | None
+    """The longer codes under a short one: send one of them as hts."""
+
+    customs_value: str | None
+    """The customs value you sent, in US dollars; null without one."""
+
+    description: str | None
+    """What the code covers, in the words of the tariff."""
+
+    duties: list[Duty] | None
+    """Each duty, with its rate, amount and source."""
+
+    estimated_duty: str | None
+    """All the duties, in US dollars. Null is unknown, never zero."""
+
+    estimated_duty_rate: str | None
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
+    of the rates; null when a duty is not a percentage, or while a duty is withheld.
+    """
+
+    facts: dict[str, Any] | None
+    """The answers this estimate rests on, those you sent and those supposed: the ordinary case
+    of each question a rule asks of these goods. Send any of them in facts to change the
+    estimate; GET /v2/facts gives each one's question and answers.
+    """
+
+    hts: str
+    """The HTS code, in digits."""
+
+    missing: list[MissingField] | None
+    """What to send again for a figure, with status needs_information."""
+
+    origin: str
+    """The country of origin."""
+
+    quantities: dict[str, Any] | None
+    """The quantities you sent."""
+
+    reference: str | None
+    """Your reference for it, when you sent one."""
+
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """calculated: every duty is established; without a customs value, a duty that does not
+    need it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+    rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the
+    value for the amounts. needs_information: something is missing to give a figure, and
+    missing says what to send again, on each line of a declaration. partial: a duty is
+    withheld for now, and withheld says which; no total is given. unsupported: a regime or a
+    rate the service does not calculate. not_found: a code the tariff does not have, or that
+    names no product. not_covered: the date or the chapter is outside the data.
+    """
+
+    warnings: list[str] | None
+    """What the amounts do not cover, in words."""
+
+    withheld: list[Withheld] | None
+    """What the total leaves out for now."""
+
+
 class BatchFailure(Model):
-    """An item of a batch that could not be calculated; the others are."""
+    """An item of a batch that could not be calculated."""
 
     _fields: ClassVar[frozenset[str]] = frozenset(['error', 'index'])
     _required: ClassVar[frozenset[str]] = frozenset(['error', 'index'])
     _nested: ClassVar[dict[str, Any]] = {'error': 'Error'}
 
     error: Error
-    """Why it has no result: invalid_input with its fields, or no data for its date yet
-    (data_unavailable, edition_not_published): send it again later.
-    """
+    """Why."""
 
     index: int
-    """The item's position in items, from 0."""
+    """Its position in the batch, from 0."""
 
 
 class BatchResult(Model):
-    """The products of a batch, each calculated on its own."""
+    """Each item of a batch, in the order sent."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['freshness', 'publication_id', 'publication_ids', 'results'])
-    _required: ClassVar[frozenset[str]] = frozenset(['freshness', 'publication_id', 'publication_ids', 'results'])
-    _nested: ClassVar[dict[str, Any]] = {'freshness': {'*': 'Freshness'}, 'results': [('BatchSuccess', 'BatchFailure')]}
-
-    freshness: dict[str, Freshness]
-    """The freshness of each publication used, by its id."""
-
-    publication_id: str | None
-    """The publication every item was calculated with; null when they differ (their dates do)."""
-
-    publication_ids: list[str]
-    """Every publication used."""
+    _fields: ClassVar[frozenset[str]] = frozenset(['results'])
+    _required: ClassVar[frozenset[str]] = frozenset(['results'])
+    _nested: ClassVar[dict[str, Any]] = {'results': [('BatchSuccess', 'BatchFailure')]}
 
     results: list[BatchSuccess | BatchFailure]
-    """One per item, in the order sent: its result, or its error."""
+    """Each item, its estimate or its error."""
 
 
 class BatchSuccess(Model):
@@ -272,284 +422,26 @@ class BatchSuccess(Model):
 
     _fields: ClassVar[frozenset[str]] = frozenset(['index', 'result'])
     _required: ClassVar[frozenset[str]] = frozenset(['index', 'result'])
-    _nested: ClassVar[dict[str, Any]] = {'result': 'CalculationResult'}
+    _nested: ClassVar[dict[str, Any]] = {'result': 'Estimate'}
 
     index: int
-    """The item's position in items, from 0."""
+    """Its position in the batch, from 0."""
 
-    result: CalculationResult
-    """Its result, as POST /v1/estimates gives it, without last_approved."""
-
-
-class CalculationResult(Model):
-    """One product: the line, with the fees of its one-line declaration."""
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['alerts', 'answers', 'as_of', 'as_of_instant', 'assumptions', 'base_rate', 'candidates', 'column_rates', 'components', 'currency', 'description', 'duty_rate', 'engine_version', 'estimate_scope', 'estimated_duty', 'estimated_landed_cost', 'examined_measures', 'fees', 'fees_status', 'footnotes', 'freshness', 'hts', 'input_guidance', 'knowledge_at', 'known_duty_subtotal', 'known_fee_subtotal', 'known_ieepa_subtotal', 'last_approved', 'match', 'origin', 'policies', 'provenance', 'publication_checksum', 'publication_id', 'publication_label', 'reference', 'replaced_base', 'required_fields', 'reserved_components', 'review_pending', 'scenarios', 'sources', 'statistical_units', 'status', 'total_fees', 'verification', 'warnings'])
-    _required: ClassVar[frozenset[str]] = frozenset(['as_of', 'base_rate', 'components', 'currency', 'engine_version', 'estimate_scope', 'estimated_duty', 'estimated_landed_cost', 'fees', 'fees_status', 'hts', 'knowledge_at', 'known_duty_subtotal', 'match', 'origin', 'publication_checksum', 'publication_id', 'publication_label', 'required_fields', 'sources', 'status', 'total_fees', 'warnings'])
-    _nested: ClassVar[dict[str, Any]] = {'candidates': ['Candidate'], 'components': ['Component'], 'duty_rate': 'DutyRate', 'examined_measures': ['ExaminedMeasure'], 'fees': ['Fee'], 'freshness': 'Freshness', 'input_guidance': ['InputGuidance'], 'last_approved': 'LastApproved', 'match': 'Match', 'reserved_components': ['Component'], 'review_pending': ['ReviewPending'], 'scenarios': 'Scenarios', 'sources': ['Source'], 'verification': 'Verification'}
-    _defaults: ClassVar[dict[str, Any]] = {'alerts': [], 'answers': [], 'assumptions': [], 'examined_measures': [], 'policies': [], 'reserved_components': [], 'review_pending': []}
-
-    alerts: list[str]
-    """Measures whose relations do not settle (two caps on the same duties, contradictory
-    relations): the duties concerned stay unresolved, and estimated_duty is null.
-    """
-
-    answers: list[dict[str, Any]]
-    """The facts the request answered, each with the measures it decides (those whose decision
-    another answer would change); none when, given the other answers, it decides nothing.
-    """
-
-    as_of: str
-    """The legal day the duties are calculated for, in New York time."""
-
-    as_of_instant: str | None
-    """Instant of effect (New York time) when a transition on that day depends on the hour."""
-
-    assumptions: list[dict[str, Any]]
-    """The answers this estimate assumed because none was declared (the ordinary case): for
-    each, the fact, the value assumed, its question, its type and choices, and under
-    alternatives what each other answer would give. Send your own answer in facts to replace
-    one.
-    """
-
-    base_rate: str | None
-    """The base rate as the tariff prints it, in the column read: general, special (an
-    agreement claimed and granted) or column 2.
-    """
-
-    candidates: list[Candidate] | None
-    """With a shorter code: the 8- and 10-digit lines under it, up to 25."""
-
-    column_rates: dict[str, str] | None
-    """The line's three rate columns as printed: general, special and other (column 2)."""
-
-    components: list[Component]
-    """The duties counted, the base duty first, each with its amount and its source."""
-
-    currency: Literal["USD"]
-    """Always USD: every amount is in US dollars."""
-
-    description: str | None
-    """The line's descriptions, from the heading down."""
-
-    duty_rate: DutyRate | None
-    """The duty as a share of the customs value, for comparison."""
-
-    engine_version: str
-    """The version of the engine that calculated it."""
-
-    estimate_scope: str
-    """What the estimate covers, in words: implemented measures only, unknown never zero."""
-
-    estimated_duty: str | None
-    """Implemented measures only. Null means unknown, never zero: information is missing, a
-    position is in review or an incident suspends it.
-    """
-
-    estimated_landed_cost: str | None
-    """Customs value + estimated duty + freight + insurance, and the entry fees only when
-    include_fees was asked. Null while the duty, an asked fee or the value is unknown.
-    """
-
-    examined_measures: list[ExaminedMeasure]
-    """Decision, reason and source of every measure examined for this case."""
-
-    fees: list[Fee]
-    """The entry fees asked (include_fees), for a declaration of this product."""
-
-    fees_status: Literal["not_requested", "not_covered", "estimated", "partial"]
-    """not_requested: include_fees is false. estimated: every fee owed is known. partial: one
-    is not (a value is missing, or the date or entry type has no fee schedule). not_covered:
-    an entry regime outside the service, no fee calculated. include_fees is false by default
-    for one product.
-    """
-
-    footnotes: list[Any] | None
-    """The tariff's footnotes for the line, which may impose conditions."""
-
-    freshness: Freshness | None
-    """Whether the sources were verified recently enough."""
-
-    hts: str
-    """The HTS code calculated, in digits."""
-
-    input_guidance: list[InputGuidance] | None
-    """One question per missing input, to ask before calculating again."""
-
-    knowledge_at: str | None
-    """When the publication was prepared: the state of knowledge the result rests on."""
-
-    known_duty_subtotal: str | None
-    """Sum of the components whose validity is established; null when none is."""
-
-    known_fee_subtotal: str | None
-    """Sum of the fees established in fees; null when fees is empty (not asked, or no fee
-    established for this date, entry type or regime).
-    """
-
-    known_ieepa_subtotal: str | None
-    """In a history: the IEEPA duties established at that point; 0.00 when none applies, from
-    2026-02-24; null otherwise.
-    """
-
-    last_approved: LastApproved | None
-    """When positions in review or incidents withhold part of the result: the last result
-    established without them, dated. Historical only: never part of a subtotal, total or
-    exposure. Absent from batch items.
-    """
-
-    match: Match
-    """How the code was found in the tariff."""
-
-    origin: str
-    """The country of origin, as sent."""
-
-    policies: list[dict[str, Any]]
-    """The workspace's standing answers applied, each marked when the request overrode it."""
-
-    provenance: dict[str, Any] | None
-    """What identifies this result for a replay: the engine result's checksum, the request as
-    the engine read it, the legal end of its publication and the image of the engine.
-    """
-
-    publication_checksum: str | None
-    """The checksum of that publication's files."""
-
-    publication_id: str
-    """The publication of the rules it was calculated with: send it as publication_id to
-    calculate again with the same rules.
-    """
-
-    publication_label: str
-    """The edition of the US tariff, in words."""
-
-    reference: str | None
-    """Your reference for the line, as sent."""
-
-    replaced_base: dict[str, Any] | None
-    """When a measure replaces the base duty: the base duty replaced, with the reason; in no
-    total.
-    """
-
-    required_fields: list[str]
-    """The inputs still missing, each asked in input_guidance."""
-
-    reserved_components: list[Component]
-    """Shown apart, subject to a position in review; in no total."""
-
-    review_pending: list[ReviewPending]
-    """What withholds part of the estimate: a position in review (position), a wrong-rate
-    incident (incident), an official notice not yet read (notice), a measure in force whose
-    rate is not announced yet (pending_rate).
-    """
-
-    scenarios: Scenarios | None
-    """With unanswered yes/no or choice facts that have no ordinary case, every coherent
-    combination of their answers (up to twelve) and exact bounds; beyond, a prudent range.
-    Null otherwise.
-    """
-
-    sources: list[Source]
-    """Every official document the result rests on."""
-
-    statistical_units: list[str] | None
-    """The statistical units the tariff prints for the line (No., kg)."""
-
-    status: Literal["calculated", "partial", "needs_information", "unsupported", "not_found", "not_covered"]
-    """What the answer is, to read before its amounts. calculated: every component is
-    established. needs_information: what you can give is missing (a fact, a quantity, the
-    value, a more precise code or the instant of effect), asked in input_guidance. partial:
-    a component stays unknown that you cannot give (a position in review, an incident,
-    incomplete coverage), listed in review_pending. unsupported: a rate, a formula or an
-    entry regime the engine does not calculate. not_covered: a date or a chapter outside the
-    data, or a code of chapters 98 and 99, which needs the product's own code. not_found: no
-    such code in the tariff, nor any more precise one.
-    """
-
-    total_fees: str | None
-    """The entry fees (MPF, HMF) of a declaration of this product alone, when include_fees was
-    asked; null when they were not asked, or while one of them is not established.
-    """
-
-    verification: Verification | None
-    """Whether the scheduled verification of the sources works; separate from freshness."""
-
-    warnings: list[str]
-    """Cautions in words, to show with the result: a preference declared, footnotes, fees not
-    established, sources not verified recently.
-    """
+    result: Estimate
+    """Its estimate, as POST /v2/estimates gives it, without last_approved."""
 
 
 class Candidate(Model):
-    """A line of the tariff under a code too short to calculate."""
+    """A longer code under a short one."""
 
     _fields: ClassVar[frozenset[str]] = frozenset(['description', 'hts'])
     _required: ClassVar[frozenset[str]] = frozenset(['description', 'hts'])
 
-    description: str
-    """Its description."""
+    description: str | None
+    """What it covers, in the words of the tariff."""
 
     hts: str
-    """A line under the code sent, of 8 or 10 digits."""
-
-
-class Component(Model):
-    """One duty counted in the result: the base duty, a Chapter 99 measure, or a cap's
-    deduction.
-    """
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['amount', 'expression', 'heading', 'id', 'label', 'program', 'required_fields', 'role', 'rule', 'rule_version', 'source', 'status', 'terms', 'uncertain'])
-    _required: ClassVar[frozenset[str]] = frozenset(['amount', 'id', 'label', 'program', 'required_fields', 'source', 'status', 'terms'])
-    _nested: ClassVar[dict[str, Any]] = {'source': 'Source', 'terms': ['RateTerm']}
-
-    amount: str | None
-    """The duty in dollars; null when unknown (an input is missing, or the rate is not
-    calculated or not announced yet). Negative for a cap's deduction.
-    """
-
-    expression: str | None
-    """The base rate as the tariff prints it; null for a measure, whose rate is in terms."""
-
-    heading: str | None
-    """The measure's Chapter 99 heading; null for the base duty."""
-
-    id: str
-    """base_rate for the base duty; otherwise the identifier of the measure."""
-
-    label: str
-    """The duty in words: Base duty, Column 2, or the measure's title."""
-
-    program: str
-    """base for the base duty; otherwise the measure's program, as 301, 232, 201 or 338."""
-
-    required_fields: list[str]
-    """The inputs its amount still needs: customs_value, quantities.<unit>, facts.<name>."""
-
-    role: str | None
-    """cap for a ceiling's deduction: what exceeds the ceiling, taken off the duties it limits.
-    Absent otherwise.
-    """
-
-    rule: str | None
-    """The identifier of the rule the measure comes from. Null for the base duty."""
-
-    rule_version: str | None
-    """The version of that rule."""
-
-    source: Source
-    """The official document of this rate."""
-
-    status: Literal["calculated", "needs_information", "unsupported", "pending"]
-    """calculated: the amount is established. needs_information: an input is missing, named in
-    required_fields. unsupported: a rate the engine does not calculate. pending: in force at
-    a rate the official text has not announced yet.
-    """
-
-    terms: list[RateTerm] | None
-    """The rate as typed terms, added together; null when the printed rate cannot be read."""
-
-    uncertain: bool | None
-    """May still be removed by an unanswered question: shown, but not in known_duty_subtotal."""
+    """The code, in digits."""
 
 
 class CoveredWindow(Model):
@@ -568,150 +460,141 @@ class CoveredWindow(Model):
     """Its last day."""
 
 
-class DutyRate(Model):
-    """The duty as a share of the customs value, for comparison: implemented duties only,
-    without the fees and AD/CVD.
-    """
+class Data(Model):
+    """The data the answer rests on."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['basis', 'estimated_ad_valorem_rate', 'status', 'total_ad_valorem_rate'])
-    _required: ClassVar[frozenset[str]] = frozenset(['status'])
+    _fields: ClassVar[frozenset[str]] = frozenset(['checked_at', 'edition', 'publication_id', 'stale'])
+    _required: ClassVar[frozenset[str]] = frozenset(['edition', 'publication_id'])
 
-    basis: str | None
-    """What the rate is, in words."""
+    checked_at: str | None
+    """When the official sources were last checked; null for a past edition."""
 
-    estimated_ad_valorem_rate: str | None
-    """The duty as a decimal fraction of the customs value (0.415 for 41.5%)."""
+    edition: str | None
+    """The edition of the US tariff, in words."""
 
-    status: Literal["not_covered", "needs_information", "unsupported", "not_representable", "estimated", "complete"]
-    """complete: the result is calculated and every duty is a share of the value. estimated:
-    the share of the duties known, the result not settled. needs_information: an input other
-    than the value is missing. not_representable: a duty is no share of the value (per unit,
-    capped or undecided). unsupported: a rate the engine does not read. not_covered: no rate
-    is read.
-    """
-
-    total_ad_valorem_rate: str | None
-    """The same, given only when the status is complete."""
-
-
-class EntryResult(Model):
-    """A whole declaration: its lines, then its fees, once."""
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['as_of', 'as_of_instant', 'currency', 'engine_version', 'entry_type', 'estimate_scope', 'estimated_duty', 'estimated_landed_cost', 'fees', 'fees_status', 'freshness', 'input_guidance', 'kind', 'knowledge_at', 'known_duty_subtotal', 'last_approved', 'lines', 'policies', 'provenance', 'publication_checksum', 'publication_id', 'publication_label', 'reference', 'required_fields', 'scenarios', 'status', 'total_fees', 'transport_mode', 'verification', 'warnings'])
-    _required: ClassVar[frozenset[str]] = frozenset(['as_of', 'estimated_duty', 'estimated_landed_cost', 'fees', 'fees_status', 'kind', 'known_duty_subtotal', 'lines', 'publication_id', 'required_fields', 'scenarios', 'status', 'total_fees', 'warnings'])
-    _nested: ClassVar[dict[str, Any]] = {'fees': ['Fee'], 'freshness': 'Freshness', 'input_guidance': ['InputGuidance'], 'last_approved': 'LastApproved', 'lines': ['LineResult'], 'scenarios': 'Scenarios', 'verification': 'Verification'}
-    _defaults: ClassVar[dict[str, Any]] = {'policies': []}
-
-    as_of: str
-    """The legal day of the declaration, in New York time."""
-
-    as_of_instant: str | None
-    """Instant of effect (New York time) when a transition on that day depends on the hour."""
-
-    currency: Literal["USD"] | None
-    """Always USD: every amount is in US dollars."""
-
-    engine_version: str | None
-    """The version of the engine that calculated it."""
-
-    entry_type: str | None
-    """formal or informal, as sent."""
-
-    estimate_scope: str | None
-    """What the estimate covers, in words: implemented measures only, unknown never zero."""
-
-    estimated_duty: str | None
-    """The duty of the declaration; null unless every line's is known. Unknown is never zero."""
-
-    estimated_landed_cost: str | None
-    """Customs values + estimated duty + freight + insurance, and the entry fees when
-    include_fees (true by default for a declaration). Null while the duty, an asked fee or a
-    value is unknown.
-    """
-
-    fees: list[Fee]
-    """MPF and HMF, once for the declaration."""
-
-    fees_status: Literal["not_requested", "not_covered", "estimated", "partial"]
-    """not_requested: include_fees is false. estimated: every fee owed is known. partial: one
-    is not (a value is missing, or the date or entry type has no fee schedule). not_covered:
-    an entry regime outside the service, no fee calculated. include_fees is true by default
-    for a declaration.
-    """
-
-    freshness: Freshness | None
-    """Whether the sources were verified recently enough."""
-
-    input_guidance: list[InputGuidance] | None
-    """Empty: each line asks its own questions, in lines."""
-
-    kind: Literal["entry"]
-    """Always entry."""
-
-    knowledge_at: str | None
-    """When the publication was prepared: the state of knowledge the result rests on."""
-
-    known_duty_subtotal: str | None
-    """Sum of the lines' established subtotals; null when none is."""
-
-    last_approved: LastApproved | None
-    """When positions in review or incidents withhold part of the result: the last result
-    established without them, dated. Historical only: never part of a subtotal, total or
-    exposure. Absent from batch items.
-    """
-
-    lines: list[LineResult]
-    """Each line's result, in the order sent."""
-
-    policies: list[dict[str, Any]]
-    """The workspace's standing answers applied, each marked when the request overrode it."""
-
-    provenance: dict[str, Any] | None
-    """What identifies this result for a replay: the engine result's checksum, the request as
-    the engine read it, the legal end of its publication and the image of the engine.
-    """
-
-    publication_checksum: str | None
-    """The checksum of that publication's files."""
-
-    publication_id: str
+    publication_id: str | None
     """The publication of the rules it was calculated with: send it as publication_id to
     calculate again with the same rules.
     """
 
-    publication_label: str | None
-    """The edition of the US tariff, in words."""
+    stale: bool | None
+    """True when those checks are older than they should be."""
+
+
+class Declaration(Model):
+    """The estimate of a whole import declaration: each line, and its fees once."""
+
+    _fields: ClassVar[frozenset[str]] = frozenset(['as_of', 'data', 'entry_type', 'estimated_duty', 'estimated_duty_rate', 'estimated_fees', 'estimated_landed_cost', 'facts', 'fees', 'freight', 'insurance', 'last_approved', 'lines', 'reference', 'saved_estimate_id', 'status', 'transport_mode', 'warnings'])
+    _required: ClassVar[frozenset[str]] = frozenset(['as_of', 'data', 'entry_type', 'lines', 'status', 'transport_mode'])
+    _nested: ClassVar[dict[str, Any]] = {'data': 'Data', 'fees': ['EntryFee'], 'last_approved': 'LastApproved', 'lines': ['Line']}
+
+    as_of: str
+    """The day calculated, in New York."""
+
+    data: Data
+
+    entry_type: str | None
+    """formal, unless you send informal. An informal entry has no calculated fees."""
+
+    estimated_duty: str | None
+    """The duties of every line, in US dollars."""
+
+    estimated_duty_rate: str | None
+    """Those duties as a fraction of the values."""
+
+    estimated_fees: str | None
+    """The entry fees of the declaration, in US dollars."""
+
+    estimated_landed_cost: str | None
+    """Values, duties, fees, freight and insurance, in US dollars."""
+
+    facts: dict[str, Any] | None
+    """The exemption its fees rest on, when one was declared for it."""
+
+    fees: list[EntryFee] | None
+    """Each entry fee, with its amount and source."""
+
+    freight: str | None
+    """The freight you sent, in US dollars."""
+
+    insurance: str | None
+    """The insurance you sent, in US dollars."""
+
+    last_approved: LastApproved | None
+    """While a duty is withheld, the last result established without it."""
+
+    lines: list[Line]
+    """Each line, in the order sent."""
 
     reference: str | None
-    """Your reference for the declaration, as sent."""
+    """Your reference for it, when you sent one."""
 
-    required_fields: list[str]
-    """Empty: each line names its own, in lines."""
+    saved_estimate_id: str | None
+    """Sent with save: its identifier, to read it with its detail."""
 
-    scenarios: Scenarios | None
-    """With unanswered yes/no or choice facts that have no ordinary case, every coherent
-    combination of their answers (up to twelve) and exact bounds; beyond, a prudent range.
-    Null otherwise.
-    """
-
-    status: Literal["calculated", "partial", "needs_information", "unsupported", "not_found", "not_covered"]
-    """The status of the declaration: that of its least settled line."""
-
-    total_fees: str | None
-    """The entry fees (MPF, HMF) of the declaration, counted once; null when include_fees is
-    false, or while one of them is not established.
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """calculated: every duty is established; without a customs value, a duty that does not
+    need it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+    rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the
+    value for the amounts. needs_information: something is missing to give a figure, and
+    missing says what to send again, on each line of a declaration. partial: a duty is
+    withheld for now, and withheld says which; no total is given. unsupported: a regime or a
+    rate the service does not calculate. not_found: a code the tariff does not have, or that
+    names no product. not_covered: the date or the chapter is outside the data.
     """
 
     transport_mode: str | None
-    """The transport mode, as sent or inferred."""
-
-    verification: Verification | None
-    """Whether the scheduled verification of the sources works; separate from freshness."""
-
-    warnings: list[str]
-    """Cautions on the declaration: its fees, the freshness and verification of the sources;
-    each line has its own.
+    """How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean
+    otherwise. By sea they pay the HMF.
     """
+
+    warnings: list[str] | None
+    """What the amounts do not cover, in words."""
+
+
+class Duty(Model):
+    """One duty of the estimate."""
+
+    _fields: ClassVar[frozenset[str]] = frozenset(['amount', 'heading', 'name', 'rate', 'source'])
+    _required: ClassVar[frozenset[str]] = frozenset(['amount', 'heading', 'name', 'rate', 'source'])
+    _nested: ClassVar[dict[str, Any]] = {'source': 'Source'}
+
+    amount: str | None
+    """Its amount in US dollars; null when it cannot be calculated yet."""
+
+    heading: str | None
+    """Its Chapter 99 heading; null for the base duty."""
+
+    name: str
+    """What the duty is, in words."""
+
+    rate: str | None
+    """Its rate, as a person reads it."""
+
+    source: Source | None
+    """The official document it rests on."""
+
+
+class EntryFee(Model):
+    """One entry fee of the declaration."""
+
+    _fields: ClassVar[frozenset[str]] = frozenset(['amount', 'name', 'note', 'source'])
+    _required: ClassVar[frozenset[str]] = frozenset(['amount', 'name', 'source'])
+    _nested: ClassVar[dict[str, Any]] = {'source': 'Source'}
+
+    amount: str | None
+    """Its amount in US dollars; null when it cannot be calculated yet."""
+
+    name: str
+    """What the fee is, in words: the merchandise processing fee (MPF) or the harbor
+    maintenance fee (HMF).
+    """
+
+    note: str | None
+    """Why its amount is what it is, when that needs saying."""
+
+    source: Source | None
+    """The official document it rests on."""
 
 
 class Error(Model):
@@ -746,45 +629,105 @@ class ErrorResponse(Model):
     """The request's identifier, also in X-Request-ID: quote it to support."""
 
 
-class ExaminedMeasure(Model):
-    """The decision on every Chapter 99 measure examined for this case."""
+class Estimate(Model):
+    """The estimate of one product."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['decision', 'facts', 'heading', 'label', 'measure', 'program', 'reason', 'rule', 'rule_version', 'source'])
-    _required: ClassVar[frozenset[str]] = frozenset(['decision', 'heading', 'label', 'measure', 'program', 'reason', 'rule', 'rule_version', 'source'])
-    _nested: ClassVar[dict[str, Any]] = {'source': 'Source'}
-    _defaults: ClassVar[dict[str, Any]] = {'facts': []}
+    _fields: ClassVar[frozenset[str]] = frozenset(['as_of', 'candidates', 'customs_value', 'data', 'description', 'duties', 'entry_type', 'estimated_duty', 'estimated_duty_rate', 'estimated_fees', 'estimated_landed_cost', 'facts', 'fees', 'freight', 'hts', 'insurance', 'last_approved', 'missing', 'origin', 'quantities', 'saved_estimate_id', 'status', 'transport_mode', 'warnings', 'withheld'])
+    _required: ClassVar[frozenset[str]] = frozenset(['as_of', 'customs_value', 'data', 'description', 'entry_type', 'hts', 'origin', 'status', 'transport_mode'])
+    _nested: ClassVar[dict[str, Any]] = {'candidates': ['Candidate'], 'data': 'Data', 'duties': ['Duty'], 'fees': ['EntryFee'], 'last_approved': 'LastApproved', 'missing': ['MissingField'], 'withheld': ['Withheld']}
 
-    decision: Literal["applied", "excluded", "undetermined"]
-    """applied: its conditions hold. excluded: one fails, or another measure removes it.
-    undetermined: an unanswered question decides.
+    as_of: str
+    """The day calculated, in New York."""
+
+    candidates: list[Candidate] | None
+    """The longer codes under a short one: send one of them as hts."""
+
+    customs_value: str | None
+    """The customs value you sent, in US dollars; null without one."""
+
+    data: Data
+
+    description: str | None
+    """What the code covers, in the words of the tariff."""
+
+    duties: list[Duty] | None
+    """Each duty, with its rate, amount and source."""
+
+    entry_type: str | None
+    """formal, unless you send informal. An informal entry has no calculated fees."""
+
+    estimated_duty: str | None
+    """All the duties, in US dollars. Null is unknown, never zero."""
+
+    estimated_duty_rate: str | None
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
+    of the rates; null when a duty is not a percentage, or while a duty is withheld.
     """
 
-    facts: list[str]
-    """The facts its conditions read: the questions this measure decides."""
+    estimated_fees: str | None
+    """All the entry fees, in US dollars; null when one cannot be calculated, or with
+    include_fees false.
+    """
 
-    heading: str
-    """Its Chapter 99 heading."""
+    estimated_landed_cost: str | None
+    """Customs value, duties, fees, freight and insurance, in US dollars; null when the value
+    or a fee asked for is not known.
+    """
 
-    label: str
-    """Its title."""
+    facts: dict[str, Any] | None
+    """The answers this estimate rests on, those you sent and those supposed: the ordinary case
+    of each question a rule asks of these goods. Send any of them in facts to change the
+    estimate; GET /v2/facts gives each one's question and answers.
+    """
 
-    measure: str
-    """The identifier of the measure."""
+    fees: list[EntryFee] | None
+    """Each entry fee, with its amount and source."""
 
-    program: str
-    """Its program, as 301, 232, 201 or 338."""
+    freight: str | None
+    """The freight you sent, in US dollars."""
 
-    reason: str
-    """Why, in words: the condition that decided, or what removed it."""
+    hts: str
+    """The HTS code, in digits."""
 
-    rule: str
-    """The identifier of the rule the measure comes from."""
+    insurance: str | None
+    """The insurance you sent, in US dollars."""
 
-    rule_version: str | None
-    """The version of that rule."""
+    last_approved: LastApproved | None
+    """While a duty is withheld, the last result established without it."""
 
-    source: Source
-    """The official document of the measure."""
+    missing: list[MissingField] | None
+    """What to send again for a figure, with status needs_information."""
+
+    origin: str
+    """The country of origin."""
+
+    quantities: dict[str, Any] | None
+    """The quantities you sent."""
+
+    saved_estimate_id: str | None
+    """Sent with save: its identifier, to read it with its detail."""
+
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """calculated: every duty is established; without a customs value, a duty that does not
+    need it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+    rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the
+    value for the amounts. needs_information: something is missing to give a figure, and
+    missing says what to send again, on each line of a declaration. partial: a duty is
+    withheld for now, and withheld says which; no total is given. unsupported: a regime or a
+    rate the service does not calculate. not_found: a code the tariff does not have, or that
+    names no product. not_covered: the date or the chapter is outside the data.
+    """
+
+    transport_mode: str | None
+    """How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean
+    otherwise. By sea they pay the HMF.
+    """
+
+    warnings: list[str] | None
+    """What the amounts do not cover, in words."""
+
+    withheld: list[Withheld] | None
+    """What the total leaves out for now."""
 
 
 class FactChoice(Model):
@@ -812,7 +755,7 @@ class FactDefinition(Model):
     """For a choice: the values to choose from."""
 
     default: Any
-    """The ordinary case, assumed when unanswered and said in assumptions."""
+    """The ordinary case, supposed when unanswered."""
 
     help: str
     """What it means, and how to answer it."""
@@ -848,69 +791,119 @@ class FactList(Model):
     """Every question of the catalogue."""
 
 
-class Fee(Model):
-    """An entry fee, once for the declaration."""
+class HistoryPoint(Model):
+    """The product at one change of the tariff."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['amount', 'assumption', 'basis', 'label', 'source'])
-    _required: ClassVar[frozenset[str]] = frozenset(['amount', 'label', 'source'])
-    _nested: ClassVar[dict[str, Any]] = {'source': 'Source'}
+    _fields: ClassVar[frozenset[str]] = frozenset(['as_of', 'candidates', 'customs_value', 'data', 'description', 'duties', 'entry_type', 'estimated_duty', 'estimated_duty_rate', 'estimated_fees', 'estimated_landed_cost', 'facts', 'fees', 'freight', 'hts', 'insurance', 'known_ieepa_duty', 'last_approved', 'missing', 'origin', 'quantities', 'status', 'transport_mode', 'warnings', 'withheld'])
+    _required: ClassVar[frozenset[str]] = frozenset(['as_of', 'customs_value', 'data', 'description', 'entry_type', 'hts', 'origin', 'status', 'transport_mode'])
+    _nested: ClassVar[dict[str, Any]] = {'candidates': ['Candidate'], 'data': 'Data', 'duties': ['Duty'], 'fees': ['EntryFee'], 'last_approved': 'LastApproved', 'missing': ['MissingField'], 'withheld': ['Withheld']}
 
-    amount: str | None
-    """The fee in dollars; null when unknown."""
+    as_of: str
+    """The day calculated, in New York."""
 
-    assumption: str | None
-    """The exemption it rests on, if any: declared, or that of goods originating under the
-    agreement claimed.
+    candidates: list[Candidate] | None
+    """The longer codes under a short one: send one of them as hts."""
+
+    customs_value: str | None
+    """The customs value you sent, in US dollars; null without one."""
+
+    data: Data
+
+    description: str | None
+    """What the code covers, in the words of the tariff."""
+
+    duties: list[Duty] | None
+    """Each duty, with its rate, amount and source."""
+
+    entry_type: str | None
+    """formal, unless you send informal. An informal entry has no calculated fees."""
+
+    estimated_duty: str | None
+    """All the duties, in US dollars. Null is unknown, never zero."""
+
+    estimated_duty_rate: str | None
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
+    of the rates; null when a duty is not a percentage, or while a duty is withheld.
     """
 
-    basis: str | None
-    """The value it is calculated on: the customs values of the lines subject to it; null when
-    one is missing.
+    estimated_fees: str | None
+    """All the entry fees, in US dollars; null when one cannot be calculated, or with
+    include_fees false.
     """
 
-    label: str
-    """MPF (merchandise processing fee) or HMF (harbor maintenance fee)."""
-
-    source: Source
-    """The official fee schedule."""
-
-
-class Freshness(Model):
-    """How recently the official sources were verified."""
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['age_hours', 'basis', 'checked_at', 'stale'])
-    _required: ClassVar[frozenset[str]] = frozenset(['age_hours', 'basis', 'checked_at', 'stale'])
-
-    age_hours: float | None
-    """Hours since then."""
-
-    basis: str
-    """The verification schedule and its target, or why a past edition has none."""
-
-    checked_at: str | None
-    """When the official sources were last verified successfully (before any verification, when
-    the edition was observed); null for a past edition.
+    estimated_landed_cost: str | None
+    """Customs value, duties, fees, freight and insurance, in US dollars; null when the value
+    or a fee asked for is not known.
     """
 
-    stale: bool
-    """True past the freshness target: the sources may have changed since."""
+    facts: dict[str, Any] | None
+    """The answers this estimate rests on, those you sent and those supposed: the ordinary case
+    of each question a rule asks of these goods. Send any of them in facts to change the
+    estimate; GET /v2/facts gives each one's question and answers.
+    """
+
+    fees: list[EntryFee] | None
+    """Each entry fee, with its amount and source."""
+
+    freight: str | None
+    """The freight you sent, in US dollars."""
+
+    hts: str
+    """The HTS code, in digits."""
+
+    insurance: str | None
+    """The insurance you sent, in US dollars."""
+
+    known_ieepa_duty: str | None
+    """What the IEEPA duties amount to that day, in US dollars; null when not established."""
+
+    last_approved: LastApproved | None
+    """While a duty is withheld, the last result established without it."""
+
+    missing: list[MissingField] | None
+    """What to send again for a figure, with status needs_information."""
+
+    origin: str
+    """The country of origin."""
+
+    quantities: dict[str, Any] | None
+    """The quantities you sent."""
+
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """calculated: every duty is established; without a customs value, a duty that does not
+    need it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+    rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the
+    value for the amounts. needs_information: something is missing to give a figure, and
+    missing says what to send again, on each line of a declaration. partial: a duty is
+    withheld for now, and withheld says which; no total is given. unsupported: a regime or a
+    rate the service does not calculate. not_found: a code the tariff does not have, or that
+    names no product. not_covered: the date or the chapter is outside the data.
+    """
+
+    transport_mode: str | None
+    """How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean
+    otherwise. By sea they pay the HMF.
+    """
+
+    warnings: list[str] | None
+    """What the amounts do not cover, in words."""
+
+    withheld: list[Withheld] | None
+    """What the total leaves out for now."""
 
 
 class HistoryResult(Model):
-    """One product at every change of the tariff over a period."""
+    """The product at every change of the tariff over the period."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['basis', 'covered_windows', 'points'])
-    _required: ClassVar[frozenset[str]] = frozenset(['basis', 'covered_windows', 'points'])
-    _nested: ClassVar[dict[str, Any]] = {'covered_windows': ['CoveredWindow'], 'points': ['CalculationResult']}
-
-    basis: str
-    """How the points are calculated, in words."""
+    _fields: ClassVar[frozenset[str]] = frozenset(['covered_windows', 'points'])
+    _required: ClassVar[frozenset[str]] = frozenset(['covered_windows', 'points'])
+    _nested: ClassVar[dict[str, Any]] = {'covered_windows': ['CoveredWindow'], 'points': ['HistoryPoint']}
 
     covered_windows: list[CoveredWindow]
-    """The periods the service holds rules for within the period asked: no point lies outside."""
+    """The periods the data covers, by publication."""
 
-    points: list[CalculationResult]
-    """One result per change of the tariff, in date order, each on its as_of."""
+    points: list[HistoryPoint]
+    """The product at each change, in order of date."""
 
 
 class HtsDetail(Model):
@@ -1025,395 +1018,183 @@ class HtsSearch(Model):
     """The lines of this page, in code order."""
 
 
-class InputGuidance(Model):
-    """One question for a missing input, to ask before calculating again."""
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['choices', 'description', 'field', 'kind', 'label', 'legal_basis', 'question', 'scope', 'type', 'unit'])
-    _required: ClassVar[frozenset[str]] = frozenset(['description', 'field', 'label', 'type'])
-
-    choices: list[Any] | None
-    """The values to choose from, for a choice."""
-
-    description: str
-    """Why it is asked, or how to answer it."""
-
-    field: str
-    """Where to send the answer, as required_fields names it: facts.<name>, quantities.<unit>,
-    customs_value, preference, hts or as_of.
-    """
-
-    kind: str | None
-    """observable or choice (a fact of the goods), declared_conclusion (a conclusion you
-    declare, as whether a Chapter 99 heading applies) or input (a plain input).
-    """
-
-    label: str
-    """The question in a few words."""
-
-    legal_basis: str | None
-    """The text the question comes from."""
-
-    question: str | None
-    """The question to ask."""
-
-    scope: str | None
-    """product: the line's own; entry or shipment: the whole declaration's."""
-
-    type: str
-    """How it is answered: boolean, choice, money, number, country, heading, text or datetime."""
-
-    unit: str | None
-    """The unit of a number, if any."""
-
-
 class LastApproved(Model):
-    """The last result established without the items now withheld: historical, in no total."""
+    """The last result established without what is withheld now: dated, kept apart, in no
+    total.
+    """
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['approved_from', 'approved_to', 'as_of', 'edition', 'estimated_duty', 'estimated_landed_cost', 'known_duty_subtotal', 'publication_id', 'status'])
-    _required: ClassVar[frozenset[str]] = frozenset(['as_of', 'edition', 'estimated_duty', 'known_duty_subtotal', 'publication_id', 'status'])
+    _fields: ClassVar[frozenset[str]] = frozenset(['approved_from', 'approved_to', 'as_of', 'edition', 'estimated_duty', 'estimated_landed_cost', 'publication_id', 'status'])
+    _required: ClassVar[frozenset[str]] = frozenset(['approved_from', 'approved_to', 'as_of', 'edition', 'estimated_duty', 'estimated_landed_cost', 'publication_id', 'status'])
 
     approved_from: str | None
-    """When that publication was approved."""
+    """When that publication went into service."""
 
     approved_to: str | None
-    """Until when it was approved; null while it still is."""
+    """When it left service; null while it serves."""
 
-    as_of: str
-    """Legal date of this result; the edition's last day for an older edition."""
+    as_of: str | None
+    """The day it was calculated for."""
 
-    edition: str
+    edition: str | None
     """The edition of the US tariff, in words."""
 
     estimated_duty: str | None
-    """The duty of that result."""
+    """Its duty then, in US dollars."""
 
     estimated_landed_cost: str | None
-    """The landed cost of that result."""
+    """Its landed cost then, in US dollars."""
 
-    known_duty_subtotal: str | None
-    """The established subtotal of that result."""
-
-    publication_id: str
-    """The publication it was calculated with."""
-
-    status: str
-    """The status of that result."""
-
-
-class LineResult(Model):
-    """One line of a declaration: its duties. The fees and the landed cost are those of the
-    declaration, calculated once for all its lines.
-    """
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['alerts', 'answers', 'as_of', 'as_of_instant', 'assumptions', 'base_rate', 'candidates', 'column_rates', 'components', 'currency', 'description', 'duty_rate', 'engine_version', 'estimate_scope', 'estimated_duty', 'examined_measures', 'footnotes', 'hts', 'input_guidance', 'knowledge_at', 'known_duty_subtotal', 'match', 'origin', 'publication_checksum', 'publication_id', 'publication_label', 'reference', 'replaced_base', 'required_fields', 'reserved_components', 'review_pending', 'sources', 'statistical_units', 'status', 'warnings'])
-    _required: ClassVar[frozenset[str]] = frozenset(['as_of', 'base_rate', 'components', 'currency', 'engine_version', 'estimate_scope', 'estimated_duty', 'hts', 'knowledge_at', 'known_duty_subtotal', 'match', 'origin', 'publication_checksum', 'publication_id', 'publication_label', 'required_fields', 'sources', 'status', 'warnings'])
-    _nested: ClassVar[dict[str, Any]] = {'candidates': ['Candidate'], 'components': ['Component'], 'duty_rate': 'DutyRate', 'examined_measures': ['ExaminedMeasure'], 'input_guidance': ['InputGuidance'], 'match': 'Match', 'reserved_components': ['Component'], 'review_pending': ['ReviewPending'], 'sources': ['Source']}
-    _defaults: ClassVar[dict[str, Any]] = {'alerts': [], 'answers': [], 'assumptions': [], 'examined_measures': [], 'reserved_components': [], 'review_pending': []}
-
-    alerts: list[str]
-    """Measures whose relations do not settle (two caps on the same duties, contradictory
-    relations): the duties concerned stay unresolved, and estimated_duty is null.
-    """
-
-    answers: list[dict[str, Any]]
-    """The facts the request answered, each with the measures it decides (those whose decision
-    another answer would change); none when, given the other answers, it decides nothing.
-    """
-
-    as_of: str
-    """The legal day the duties are calculated for, in New York time."""
-
-    as_of_instant: str | None
-    """Instant of effect (New York time) when a transition on that day depends on the hour."""
-
-    assumptions: list[dict[str, Any]]
-    """The answers this estimate assumed because none was declared (the ordinary case): for
-    each, the fact, the value assumed, its question, its type and choices, and under
-    alternatives what each other answer would give. Send your own answer in facts to replace
-    one.
-    """
-
-    base_rate: str | None
-    """The base rate as the tariff prints it, in the column read: general, special (an
-    agreement claimed and granted) or column 2.
-    """
-
-    candidates: list[Candidate] | None
-    """With a shorter code: the 8- and 10-digit lines under it, up to 25."""
-
-    column_rates: dict[str, str] | None
-    """The line's three rate columns as printed: general, special and other (column 2)."""
-
-    components: list[Component]
-    """The duties counted, the base duty first, each with its amount and its source."""
-
-    currency: Literal["USD"]
-    """Always USD: every amount is in US dollars."""
-
-    description: str | None
-    """The line's descriptions, from the heading down."""
-
-    duty_rate: DutyRate | None
-    """The duty as a share of the customs value, for comparison."""
-
-    engine_version: str
-    """The version of the engine that calculated it."""
-
-    estimate_scope: str
-    """What the estimate covers, in words: implemented measures only, unknown never zero."""
-
-    estimated_duty: str | None
-    """Implemented measures only. Null means unknown, never zero: information is missing, a
-    position is in review or an incident suspends it.
-    """
-
-    examined_measures: list[ExaminedMeasure]
-    """Decision, reason and source of every measure examined for this case."""
-
-    footnotes: list[Any] | None
-    """The tariff's footnotes for the line, which may impose conditions."""
-
-    hts: str
-    """The HTS code calculated, in digits."""
-
-    input_guidance: list[InputGuidance] | None
-    """One question per missing input, to ask before calculating again."""
-
-    knowledge_at: str | None
-    """When the publication was prepared: the state of knowledge the result rests on."""
-
-    known_duty_subtotal: str | None
-    """Sum of the components whose validity is established; null when none is."""
-
-    match: Match
-    """How the code was found in the tariff."""
-
-    origin: str
-    """The country of origin, as sent."""
-
-    publication_checksum: str | None
-    """The checksum of that publication's files."""
-
-    publication_id: str
+    publication_id: str | None
     """The publication of the rules it was calculated with: send it as publication_id to
     calculate again with the same rules.
     """
 
-    publication_label: str
-    """The edition of the US tariff, in words."""
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """Its status then."""
+
+
+class Line(Model):
+    """One line of a declaration: its fees are the declaration's."""
+
+    _fields: ClassVar[frozenset[str]] = frozenset(['candidates', 'customs_value', 'description', 'duties', 'estimated_duty', 'estimated_duty_rate', 'facts', 'hts', 'missing', 'origin', 'quantities', 'reference', 'status', 'warnings', 'withheld'])
+    _required: ClassVar[frozenset[str]] = frozenset(['customs_value', 'description', 'hts', 'origin', 'status'])
+    _nested: ClassVar[dict[str, Any]] = {'candidates': ['Candidate'], 'duties': ['Duty'], 'missing': ['MissingField'], 'withheld': ['Withheld']}
+
+    candidates: list[Candidate] | None
+    """The longer codes under a short one: send one of them as hts."""
+
+    customs_value: str | None
+    """The customs value you sent, in US dollars; null without one."""
+
+    description: str | None
+    """What the code covers, in the words of the tariff."""
+
+    duties: list[Duty] | None
+    """Each duty, with its rate, amount and source."""
+
+    estimated_duty: str | None
+    """All the duties, in US dollars. Null is unknown, never zero."""
+
+    estimated_duty_rate: str | None
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
+    of the rates; null when a duty is not a percentage, or while a duty is withheld.
+    """
+
+    facts: dict[str, Any] | None
+    """The answers this estimate rests on, those you sent and those supposed: the ordinary case
+    of each question a rule asks of these goods. Send any of them in facts to change the
+    estimate; GET /v2/facts gives each one's question and answers.
+    """
+
+    hts: str
+    """The HTS code, in digits."""
+
+    missing: list[MissingField] | None
+    """What to send again for a figure, with status needs_information."""
+
+    origin: str
+    """The country of origin."""
+
+    quantities: dict[str, Any] | None
+    """The quantities you sent."""
 
     reference: str | None
-    """Your reference for the line, as sent."""
+    """Your reference for it, when you sent one."""
 
-    replaced_base: dict[str, Any] | None
-    """When a measure replaces the base duty: the base duty replaced, with the reason; in no
-    total.
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """calculated: every duty is established; without a customs value, a duty that does not
+    need it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+    rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the
+    value for the amounts. needs_information: something is missing to give a figure, and
+    missing says what to send again, on each line of a declaration. partial: a duty is
+    withheld for now, and withheld says which; no total is given. unsupported: a regime or a
+    rate the service does not calculate. not_found: a code the tariff does not have, or that
+    names no product. not_covered: the date or the chapter is outside the data.
     """
 
-    required_fields: list[str]
-    """The inputs still missing, each asked in input_guidance."""
+    warnings: list[str] | None
+    """What the amounts do not cover, in words."""
 
-    reserved_components: list[Component]
-    """Shown apart, subject to a position in review; in no total."""
-
-    review_pending: list[ReviewPending]
-    """What withholds part of the estimate: a position in review (position), a wrong-rate
-    incident (incident), an official notice not yet read (notice), a measure in force whose
-    rate is not announced yet (pending_rate).
-    """
-
-    sources: list[Source]
-    """Every official document the result rests on."""
-
-    statistical_units: list[str] | None
-    """The statistical units the tariff prints for the line (No., kg)."""
-
-    status: Literal["calculated", "partial", "needs_information", "unsupported", "not_found", "not_covered"]
-    """What the answer is, to read before its amounts. calculated: every component is
-    established. needs_information: what you can give is missing (a fact, a quantity, the
-    value, a more precise code or the instant of effect), asked in input_guidance. partial:
-    a component stays unknown that you cannot give (a position in review, an incident,
-    incomplete coverage), listed in review_pending. unsupported: a rate, a formula or an
-    entry regime the engine does not calculate. not_covered: a date or a chapter outside the
-    data, or a code of chapters 98 and 99, which needs the product's own code. not_found: no
-    such code in the tariff, nor any more precise one.
-    """
-
-    warnings: list[str]
-    """Cautions in words, to show with the result: a preference declared, footnotes, fees not
-    established, sources not verified recently.
-    """
+    withheld: list[Withheld] | None
+    """What the total leaves out for now."""
 
 
-class Match(Model):
-    """How the code sent was found in the tariff."""
+class MissingField(Model):
+    """What the service needs to give a figure."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['level', 'matched_hts', 'rate_basis', 'rate_hts', 'type'])
-    _required: ClassVar[frozenset[str]] = frozenset(['level', 'rate_basis', 'type'])
+    _fields: ClassVar[frozenset[str]] = frozenset(['choices', 'field', 'question', 'type', 'unit'])
+    _required: ClassVar[frozenset[str]] = frozenset(['field', 'question', 'type'])
 
-    level: int
-    """The number of digits of the code sent."""
+    choices: list[Any] | None
+    """The values a choice takes."""
 
-    matched_hts: str | None
-    """The line found."""
+    field: str
+    """Where to send it in the request."""
 
-    rate_basis: Literal["direct", "parent"] | None
-    """direct: the line's own rates. parent: a 10-digit line without rates of its own takes
-    those of its 8-digit line.
-    """
+    question: str
+    """What it asks, in words."""
 
-    rate_hts: str | None
-    """The line whose rates are read."""
-
-    type: Literal["none", "exact", "prefix_candidates"]
-    """exact: a line of the tariff. prefix_candidates: a shorter code, the lines under it in
-    candidates. none: not found, or not calculated (a date or chapter not covered).
-    """
-
-
-class RateTerm(Model):
-    """One term of a rate; the terms of a rate are added together."""
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['amount', 'basis', 'field', 'kind', 'rate', 'unit'])
-    _required: ClassVar[frozenset[str]] = frozenset(['kind'])
-
-    amount: str | None
-    """Dollars per unit, for a specific term."""
-
-    basis: str | None
-    """For a top_up, the duty it completes: applicable (the line's base duty) or mfn (the
-    column 1 general duty).
-    """
-
-    field: str | None
-    """The fact that gives the value the term applies to: the part's value (content), or the
-    value a top_up covers.
-    """
-
-    kind: Literal["ad_valorem", "content", "named", "pending", "specific", "sugar", "top_up"]
-    """The form of the term. ad_valorem: a share of the value. specific: an amount per unit.
-    content: a share of the value of a part (a watch's movement). top_up: what brings the
-    duty up to a share of the value. sugar: the polarization formula. named: a calculator of
-    the engine. pending: announced without its rate.
-    """
-
-    rate: str | None
-    """A decimal fraction (0.165 for 16.5%): of the value (ad_valorem), of the part's value
-    (content), the share a top_up brings the duty to, or the sugar formula's rate per
-    kilogram.
+    type: str
+    """The type of its value: number, money, boolean, choice, text, heading, country or
+    datetime.
     """
 
     unit: str | None
-    """The unit a specific term counts, as in quantities (kg, l, item…)."""
-
-
-class ReviewPending(Model):
-    """What withholds part of an estimate."""
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['detected_at', 'effect', 'kind', 'position', 'reason', 'reference'])
-    _required: ClassVar[frozenset[str]] = frozenset(['effect', 'kind', 'reason'])
-
-    detected_at: str | None
-    """When it was detected."""
-
-    effect: str
-    """What it may do to the estimate: additional (a duty on top of the others), may_modify
-    (change the duties it names, which are withheld), none, or unknown (change any duty: all
-    are withheld).
-    """
-
-    kind: Literal["position", "incident", "notice", "pending_rate"]
-    """position: a Chapter 99 position in review. incident: an open wrong-rate incident.
-    notice: an official notice not yet read. pending_rate: a measure in force whose rate is
-    not announced yet.
-    """
-
-    position: str | None
-    """The Chapter 99 heading concerned, if any."""
-
-    reason: str
-    """Why the estimate is withheld, in words."""
-
-    reference: str | None
-    """The incident's or the notice's reference."""
-
-
-class Saved(Model):
-    """An estimate just calculated and saved."""
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['entry_id', 'id', 'kind', 'result'])
-    _required: ClassVar[frozenset[str]] = frozenset(['id', 'kind', 'result'])
-    _nested: ClassVar[dict[str, Any]] = {'result': ('CalculationResult', 'EntryResult')}
-
-    entry_id: str | None
-    """For a declaration: the declaration it is saved as in the portal."""
-
-    id: str
-    """The saved estimate's identifier."""
-
-    kind: Literal["single", "entry"]
-    """single: one product. entry: a declaration."""
-
-    result: CalculationResult | EntryResult
-    """Its result, as POST /v1/estimates or POST /v1/estimates/entry gives it."""
+    """The unit of a quantity."""
 
 
 class SavedDetail(Model):
-    """A saved estimate with its request and its result, as they were."""
+    """A saved estimate, with the detail behind its answer."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['author', 'created_at', 'engine_version', 'estimated_duty', 'id', 'image_digest', 'incidents', 'inputs', 'kind', 'label', 'publication_id', 'result', 'source', 'status'])
-    _required: ClassVar[frozenset[str]] = frozenset(['author', 'created_at', 'engine_version', 'estimated_duty', 'id', 'image_digest', 'incidents', 'inputs', 'kind', 'label', 'publication_id', 'result', 'source', 'status'])
-    _nested: ClassVar[dict[str, Any]] = {'incidents': ['SavedIncident']}
+    _fields: ClassVar[frozenset[str]] = frozenset(['author', 'created_at', 'estimated_duty', 'id', 'incidents', 'inputs', 'kind', 'label', 'publication_id', 'result', 'source', 'status'])
+    _required: ClassVar[frozenset[str]] = frozenset(['author', 'created_at', 'estimated_duty', 'id', 'incidents', 'inputs', 'kind', 'label', 'publication_id', 'result', 'source', 'status'])
+    _nested: ClassVar[dict[str, Any]] = {'incidents': ['SavedIncident'], 'result': ('AuditedEstimate', 'AuditedDeclaration')}
 
     author: str
-    """Who saved it: the API key, by its name, or the person."""
+    """Who saved it."""
 
     created_at: str
     """When it was saved."""
 
-    engine_version: str
-    """The version of the engine that calculated it."""
-
     estimated_duty: str | None
-    """The duty of its result, as it was calculated."""
+    """All the duties, in US dollars."""
 
     id: str
-    """Its identifier: read it with GET /v1/saved-estimates/{id}."""
-
-    image_digest: str | None
-    """The image of the engine that replays it exactly."""
+    """Its identifier."""
 
     incidents: list[SavedIncident]
-    """The incidents found since it was saved that concern it, the oldest first; empty when
-    there are none.
-    """
+    """The incidents found since that concern it."""
 
     inputs: dict[str, Any]
-    """The request, in the fields of the API: an EstimateInput (single) or an EntryInput
-    (entry).
-    """
+    """The request as calculated: its date, publication and answers."""
 
     kind: Literal["single", "entry"]
     """single: one product. entry: a declaration."""
 
     label: str
-    """Its name, as given when saved."""
+    """The name it was given."""
 
     publication_id: str | None
-    """The publication it was calculated with."""
-
-    result: dict[str, Any]
-    """The result as its engine_version calculated it, never recalculated: a CalculationResult
-    (single) or an EntryResult (entry) of that version.
+    """The publication of the rules it was calculated with: send it as publication_id to
+    calculate again with the same rules.
     """
+
+    result: AuditedEstimate | AuditedDeclaration
+    """Its answer and its detail."""
 
     source: str
-    """Where it was saved: api, mcp, portal, import (a declaration imported in the portal) or
-    report (the case of an error report).
-    """
+    """Where it was saved: api, mcp, portal or import."""
 
-    status: str | None
-    """The status of its result, as it was calculated: incidents says what was found since."""
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """calculated: every duty is established; without a customs value, a duty that does not
+    need it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+    rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the
+    value for the amounts. needs_information: something is missing to give a figure, and
+    missing says what to send again, on each line of a declaration. partial: a duty is
+    withheld for now, and withheld says which; no total is given. unsupported: a regime or a
+    rate the service does not calculate. not_found: a code the tariff does not have, or that
+    names no product. not_covered: the date or the chapter is outside the data.
+    """
 
 
 class SavedIncident(Model):
@@ -1443,215 +1224,157 @@ class SavedIncident(Model):
 
 
 class SavedList(Model):
-    """A page of the workspace's saved estimates."""
+    """A page of saved estimates, the newest first."""
 
     _fields: ClassVar[frozenset[str]] = frozenset(['count', 'limit', 'offset', 'results'])
     _required: ClassVar[frozenset[str]] = frozenset(['count', 'limit', 'offset', 'results'])
     _nested: ClassVar[dict[str, Any]] = {'results': ['SavedSummary']}
 
     count: int
-    """How many saved estimates the workspace has."""
+    """How many there are in all."""
 
     limit: int
-    """How many a page holds, as asked."""
+    """How many were asked."""
 
     offset: int
-    """How many were skipped, as asked."""
+    """How many were skipped."""
 
     results: list[SavedSummary]
-    """This page, the latest first."""
+    """This page."""
 
 
 class SavedSummary(Model):
-    """A saved estimate, as the list gives it."""
+    """A saved estimate in a list."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['author', 'created_at', 'engine_version', 'estimated_duty', 'id', 'image_digest', 'incidents', 'kind', 'label', 'publication_id', 'source', 'status'])
-    _required: ClassVar[frozenset[str]] = frozenset(['author', 'created_at', 'engine_version', 'estimated_duty', 'id', 'image_digest', 'incidents', 'kind', 'label', 'publication_id', 'source', 'status'])
+    _fields: ClassVar[frozenset[str]] = frozenset(['author', 'created_at', 'estimated_duty', 'id', 'incidents', 'kind', 'label', 'publication_id', 'source', 'status'])
+    _required: ClassVar[frozenset[str]] = frozenset(['author', 'created_at', 'estimated_duty', 'id', 'incidents', 'kind', 'label', 'publication_id', 'source', 'status'])
     _nested: ClassVar[dict[str, Any]] = {'incidents': ['SavedIncident']}
 
     author: str
-    """Who saved it: the API key, by its name, or the person."""
+    """Who saved it."""
 
     created_at: str
     """When it was saved."""
 
-    engine_version: str
-    """The version of the engine that calculated it."""
-
     estimated_duty: str | None
-    """The duty of its result, as it was calculated."""
+    """All the duties, in US dollars."""
 
     id: str
-    """Its identifier: read it with GET /v1/saved-estimates/{id}."""
-
-    image_digest: str | None
-    """The image of the engine that replays it exactly."""
+    """Its identifier."""
 
     incidents: list[SavedIncident]
-    """The incidents found since it was saved that concern it, the oldest first; empty when
-    there are none.
-    """
+    """The incidents found since that concern it."""
 
     kind: Literal["single", "entry"]
     """single: one product. entry: a declaration."""
 
     label: str
-    """Its name, as given when saved."""
+    """The name it was given."""
 
     publication_id: str | None
-    """The publication it was calculated with."""
+    """The publication of the rules it was calculated with: send it as publication_id to
+    calculate again with the same rules.
+    """
 
     source: str
-    """Where it was saved: api, mcp, portal, import (a declaration imported in the portal) or
-    report (the case of an error report).
+    """Where it was saved: api, mcp, portal or import."""
+
+    status: Literal["calculated", "rate_only", "needs_information", "partial", "unsupported", "not_found", "not_covered"]
+    """calculated: every duty is established; without a customs value, a duty that does not
+    need it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+    rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the
+    value for the amounts. needs_information: something is missing to give a figure, and
+    missing says what to send again, on each line of a declaration. partial: a duty is
+    withheld for now, and withheld says which; no total is given. unsupported: a regime or a
+    rate the service does not calculate. not_found: a code the tariff does not have, or that
+    names no product. not_covered: the date or the chapter is outside the data.
     """
-
-    status: str | None
-    """The status of its result, as it was calculated: incidents says what was found since."""
-
-
-class Scenario(Model):
-    """One combination of answers to the questions left open, and what it gives."""
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['answers', 'estimated_duty', 'estimated_total', 'total_fees'])
-    _required: ClassVar[frozenset[str]] = frozenset(['answers', 'estimated_duty', 'estimated_total', 'total_fees'])
-
-    answers: list[dict[str, Any]]
-    """One answer to each question: its fact, its line (from 0; null for a question of the
-    whole declaration) and its value.
-    """
-
-    estimated_duty: str | None
-    """The duty with these answers."""
-
-    estimated_total: str | None
-    """Duty and fees with these answers; null when one is unknown."""
-
-    total_fees: str | None
-    """The fees with these answers; null when not asked or unknown."""
-
-
-class Scenarios(Model):
-    """What the estimate would be under each answer to the questions that have no ordinary
-    case.
-    """
-
-    _fields: ClassVar[frozenset[str]] = frozenset(['bounds', 'facts', 'kind', 'scenarios'])
-    _required: ClassVar[frozenset[str]] = frozenset(['bounds', 'facts', 'kind', 'scenarios'])
-    _nested: ClassVar[dict[str, Any]] = {'scenarios': ['Scenario']}
-
-    bounds: dict[str, str] | None
-    """minimum and maximum of estimated_total, with their label; null when a combination has no
-    total.
-    """
-
-    facts: list[str]
-    """The questions the scenarios answer."""
-
-    kind: Literal["exact", "prudent"]
-    """exact: every combination calculated. prudent: more than twelve, bounds only."""
-
-    scenarios: list[Scenario]
-    """Each combination; empty for a prudent range."""
 
 
 class Source(Model):
-    """An official document a rate, a measure or a fee is read from."""
+    """The official document an amount rests on."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['ahead_of_tariff', 'authority', 'checksum', 'sha256', 'title', 'url'])
-    _required: ClassVar[frozenset[str]] = frozenset(['authority'])
-
-    ahead_of_tariff: bool | None
-    """True when the duty rests on an official notice (a proclamation, a USTR notice, a customs
-    message) that the USITC tariff does not hold yet.
-    """
-
-    authority: str
-    """Who publishes it: USITC, CBP, USTR, the Federal Register…"""
-
-    checksum: str | None
-    """The same SHA-256 as sha256, under the name some sources give it."""
+    _fields: ClassVar[frozenset[str]] = frozenset(['sha256', 'title', 'url'])
+    _required: ClassVar[frozenset[str]] = frozenset(['sha256', 'title', 'url'])
 
     sha256: str | None
-    """SHA-256 of the document as archived: the very copy the rate was read from."""
+    """The SHA-256 of the file, to check it is the one cited."""
 
     title: str | None
-    """Its title, or the edition of the tariff. A measure whose text has not changed since
-    keeps citing an earlier edition than the publication's.
-    """
+    """Its title."""
 
     url: str | None
-    """Where the official document is published: an edition of the tariff at its own file,
-    which keeps serving the bytes of sha256. A publication prepared before 2026-11-03 gives
-    the address of the current edition instead, whose bytes differ once a later edition is
-    out.
-    """
+    """Where to read it: the file of that edition."""
 
 
 class Status(Model):
-    """Freshness and verification of the data, and its coverage; the same as the pages /status/
-    and /coverage/.
+    """Whether the data can be relied on now, and which data answers. The pages /status/ and
+    /coverage/ say more.
     """
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['coverage', 'engine_version', 'freshness_target_hours', 'frozen', 'incidents', 'notices', 'publications', 'rule_horizon', 'verification'])
-    _required: ClassVar[frozenset[str]] = frozenset(['coverage', 'engine_version', 'freshness_target_hours', 'frozen', 'incidents', 'notices', 'publications', 'rule_horizon', 'verification'])
+    _fields: ClassVar[frozenset[str]] = frozenset(['checked_at', 'covered_from', 'edition', 'engine_version', 'incidents', 'publication_id', 'stale', 'status'])
+    _required: ClassVar[frozenset[str]] = frozenset(['checked_at', 'covered_from', 'edition', 'engine_version', 'incidents', 'publication_id', 'stale', 'status'])
+    _nested: ClassVar[dict[str, Any]] = {'incidents': ['StatusIncident']}
 
-    coverage: dict[str, Any]
-    """Chapter 99 positions and their status, the share of estimates withheld, historical
-    periods, base rates, agreements, fees and what is out of scope.
-    """
+    checked_at: str | None
+    """When the official sources were last checked."""
+
+    covered_from: str | None
+    """The first day an estimate can be dated."""
+
+    edition: str | None
+    """The edition of the US tariff, in words."""
 
     engine_version: str
     """The engine that calculates every estimate now."""
 
-    freshness_target_hours: int
-    """Past this age, the sources are stale."""
+    incidents: list[StatusIncident]
+    """The wrong rates being corrected."""
 
-    frozen: bool
-    """True while no new publication may be put in service."""
-
-    incidents: list[dict[str, Any]]
-    """Wrong-rate incidents open, notified or corrected: reference, status, notice and
-    opened_at.
+    publication_id: str | None
+    """The publication of the rules in service. When it changes, or the engine does, an
+    estimate you kept may give another result.
     """
 
-    notices: list[dict[str, Any]]
-    """Positions still in review after the public notice delay: position, since, reason and
-    detected_at.
-    """
+    stale: bool
+    """True when those checks are older than they should be."""
 
-    publications: list[dict[str, Any]]
-    """The publications in service, by edition: edition, valid_from, valid_to, publication_id
-    and approved_from.
-    """
-
-    rule_horizon: dict[str, Any]
-    """Until when the fee schedules run (fee_rules_until), and in how many days
-    (days_remaining).
-    """
-
-    verification: dict[str, Any]
-    """Whether the scheduled verification of the sources works: status, last_success,
-    last_failure and consecutive_failures, as in a result.
+    status: Literal["ok", "degraded"]
+    """ok: the official sources were verified lately. degraded: they could not be: estimates
+    still answer, from the data last verified.
     """
 
 
-class Verification(Model):
-    """Whether the scheduled verification of the official sources works."""
+class StatusIncident(Model):
+    """A wrong rate being corrected."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['consecutive_failures', 'last_failure', 'last_success', 'status'])
-    _required: ClassVar[frozenset[str]] = frozenset(['consecutive_failures', 'last_failure', 'last_success', 'status'])
+    _fields: ClassVar[frozenset[str]] = frozenset(['notice', 'opened_at', 'reference', 'status'])
+    _required: ClassVar[frozenset[str]] = frozenset(['notice', 'opened_at', 'reference', 'status'])
 
-    consecutive_failures: int
-    """How many verifications failed in a row, the latest included."""
+    notice: str
+    """What is being corrected, in words."""
 
-    last_failure: str | None
-    """When it last failed."""
+    opened_at: str
+    """When it was opened."""
 
-    last_success: str | None
-    """When it last worked."""
+    reference: str
+    """The incident, as the emails and the status page name it."""
 
-    status: Literal["healthy", "failing", "unknown"]
-    """healthy: the last verification worked. failing: the last ones failed. unknown: none has
-    run.
-    """
+    status: str
+    """Where it stands: open, notified or corrected."""
+
+
+class Withheld(Model):
+    """What the total leaves out for now."""
+
+    _fields: ClassVar[frozenset[str]] = frozenset(['heading', 'name', 'reason'])
+    _required: ClassVar[frozenset[str]] = frozenset(['heading', 'name', 'reason'])
+
+    heading: str | None
+    """Its Chapter 99 heading, if any."""
+
+    name: str
+    """What is withheld, in words."""
+
+    reason: str
+    """Why, and what it means for the total."""

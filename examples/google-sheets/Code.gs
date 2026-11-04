@@ -20,7 +20,7 @@ function TARIFFTRUST_DUTY(hts, origin, customsValue) {
     origin: String(origin),
     customs_value: String(customsValue),
   });
-  const response = UrlFetchApp.fetch("https://api.tarifftrust.com/v1/estimates", {
+  const response = UrlFetchApp.fetch("https://api.tarifftrust.com/v2/estimates", {
     method: "post",
     contentType: "application/json",
     headers: {
@@ -37,7 +37,7 @@ function TARIFFTRUST_DUTY(hts, origin, customsValue) {
     const fields = error.fields ? " (" + error.fields.join(", ") + ")" : "";
     throw new Error((error.message || "TariffTrust refused the request") + fields);
   }
-  if (answer.estimated_duty === null) {
+  if (answer.estimated_duty == null) {
     return "Unknown (" + answer.status + ")";
   }
   return Number(answer.estimated_duty);

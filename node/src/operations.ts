@@ -5,18 +5,16 @@ import type {
   AgreementList,
   BatchRequest,
   BatchResult,
-  CalculationResult,
-  EntryInput,
-  EntryResult,
-  EstimateInput,
+  Declaration,
+  EntryRequest,
+  Estimate,
+  EstimateRequest,
   FactList,
   HistoryRequest,
   HistoryResult,
   HtsDetail,
   HtsSearch,
   ListSavedEstimatesQuery,
-  SaveRequest,
-  Saved,
   SavedDetail,
   SavedList,
   SearchHtsQuery,
@@ -37,7 +35,7 @@ export abstract class Operations {
   listAgreements(options?: RequestOptions): Promise<AgreementList> {
     return this.request<AgreementList>({
       method: "GET",
-      path: "/v1/agreements",
+      path: "/v2/agreements",
       options,
     });
   }
@@ -46,18 +44,15 @@ export abstract class Operations {
    * Estimate one product.
    *
    * Every US duty and fee that applies to one product at a date, each with its official source.
-   * Without a customs value, the duty rate. Not saved: an unsaved estimate cannot be replayed,
-   * reported or notified in an incident; save it with POST /v1/saved-estimates. Needs the
-   * calculate permission; counted in the quota unless it gives no figure of the duty: a
-   * question asked without any duty amount or rate (status needs_information), a code the
-   * tariff does not have or that names no product, a regime the service does not calculate. A
-   * question that gives the duty of each answer (scenarios), their bounds or the subtotal
-   * already known is counted.
+   * Without a customs value, the duty rate when the duties are percentages. When something is
+   * missing to give a figure, the answer says what to send again. Send save to keep the
+   * estimate. Needs the calculate permission; counted in the quota unless it gives no figure of
+   * the duty: status needs_information, not_found, not_covered or unsupported.
    */
-  estimate(body: EstimateInput, options?: RequestOptions): Promise<CalculationResult> {
-    return this.request<CalculationResult>({
+  estimate(body: EstimateRequest, options?: RequestOptions): Promise<Estimate> {
+    return this.request<Estimate>({
       method: "POST",
-      path: "/v1/estimates",
+      path: "/v2/estimates",
       body,
       idempotent: true,
       options,
@@ -67,20 +62,20 @@ export abstract class Operations {
   /**
    * Estimate up to 200 products.
    *
-   * Each item calculated on its own, as POST /v1/estimates would, in the order given. An
-   * invalid item refuses the whole batch (422, error.fields naming items.<index>.<field>); an
-   * item that cannot be calculated (a date no edition covers) has its own error in results, the
-   * others are calculated. The batch's publication_id, if any, holds for every item. Counted as
-   * one request, whatever its number of items, unless none of them gives a figure of the duty
-   * (questions without any duty amount or rate, and errors, only). When the data is unavailable
-   * for every item, the batch is a 503 to send again, neither counted nor kept for its
-   * Idempotency-Key; when only for some, they have their error (data_unavailable) in results:
-   * send those items again.
+   * Each item calculated on its own, as POST /v2/estimates would, in the order given: each is
+   * its own declaration, so do not add their fees up; for several products entered together,
+   * use POST /v2/estimates/entry. An invalid item refuses the whole batch (422, error.fields
+   * naming items.<index>.<field>); an item that cannot be calculated (a date no edition covers)
+   * has its own error in results, the others are calculated. The batch's publication_id, if
+   * any, holds for every item. Counted as one request, whatever its number of items, unless
+   * none of them gives a figure of the duty. When the data is unavailable for every item, the
+   * batch is a 503 to send again, neither counted nor kept for its Idempotency-Key; when only
+   * for some, they have their error (data_unavailable) in results: send those items again.
    */
   estimateBatch(body: BatchRequest, options?: RequestOptions): Promise<BatchResult> {
     return this.request<BatchResult>({
       method: "POST",
-      path: "/v1/estimates/batch",
+      path: "/v2/estimates/batch",
       body,
       idempotent: true,
       options,
@@ -91,14 +86,13 @@ export abstract class Operations {
    * Estimate a whole import declaration.
    *
    * Every line, then the MPF and the HMF once on the declaration: adding the estimates of the
-   * lines of one declaration gives a wrong MPF. Not saved: save it with POST /v1/saved-
-   * estimates (entry) to replay or report it. Counted as one request, whatever its number of
-   * lines, unless it gives no figure of the duty (a question without any duty amount or rate).
+   * lines of one declaration gives a wrong MPF. Send save to keep the estimate. Counted as one
+   * request, whatever its number of lines, unless it gives no figure of the duty.
    */
-  estimateEntry(body: EntryInput, options?: RequestOptions): Promise<EntryResult> {
-    return this.request<EntryResult>({
+  estimateEntry(body: EntryRequest, options?: RequestOptions): Promise<Declaration> {
+    return this.request<Declaration>({
       method: "POST",
-      path: "/v1/estimates/entry",
+      path: "/v2/estimates/entry",
       body,
       idempotent: true,
       options,
@@ -112,12 +106,12 @@ export abstract class Operations {
    * covers it begins or ends, and on each day an incident or a notice not yet read begins or
    * stops withholding its estimate, over the period asked, with the rules approved today.
    * Counted as one request, whatever its number of points, unless no point gives a figure of
-   * the duty (a question without any duty amount or rate).
+   * the duty.
    */
   estimateHistory(body: HistoryRequest, options?: RequestOptions): Promise<HistoryResult> {
     return this.request<HistoryResult>({
       method: "POST",
-      path: "/v1/estimates/history",
+      path: "/v2/estimates/history",
       body,
       idempotent: true,
       options,
@@ -128,14 +122,13 @@ export abstract class Operations {
    * List the questions an estimate may ask.
    *
    * The facts catalogue: each question a measure may depend on, by the name to answer it with
-   * in facts, its type, its choices and its ordinary case. A result lists the ones it needs in
-   * input_guidance, and those it assumed in assumptions. Needs the read permission; not
-   * counted.
+   * in facts, its type, its choices and its ordinary case. An answer names the ones it needs in
+   * missing, and those it rests on in facts. Needs the read permission; not counted.
    */
   listFacts(options?: RequestOptions): Promise<FactList> {
     return this.request<FactList>({
       method: "GET",
-      path: "/v1/facts",
+      path: "/v2/facts",
       options,
     });
   }
@@ -150,7 +143,7 @@ export abstract class Operations {
   searchHts(query: SearchHtsQuery = {}, options?: RequestOptions): Promise<HtsSearch> {
     return this.request<HtsSearch>({
       method: "GET",
-      path: "/v1/hts",
+      path: "/v2/hts",
       query: query as Record<string, unknown>,
       options,
     });
@@ -165,7 +158,7 @@ export abstract class Operations {
   getHts(code: string, options?: RequestOptions): Promise<HtsDetail> {
     return this.request<HtsDetail>({
       method: "GET",
-      path: `/v1/hts/${encodeURIComponent(code)}`,
+      path: `/v2/hts/${encodeURIComponent(code)}`,
       options,
     });
   }
@@ -179,26 +172,8 @@ export abstract class Operations {
   listSavedEstimates(query: ListSavedEstimatesQuery = {}, options?: RequestOptions): Promise<SavedList> {
     return this.request<SavedList>({
       method: "GET",
-      path: "/v1/saved-estimates",
+      path: "/v2/saved-estimates",
       query: query as Record<string, unknown>,
-      options,
-    });
-  }
-
-  /**
-   * Calculate and save an estimate.
-   *
-   * Calculate one product (estimate) or a declaration (entry) as POST /v1/estimates or POST
-   * /v1/estimates/entry would, and save it: only a saved estimate can be replayed, reported or
-   * notified in an incident. Needs the calculate permission; counted as the estimate is.
-   * Whichever is saved, an Idempotency-Key holds for one request of this route.
-   */
-  saveEstimate(body: SaveRequest, options?: RequestOptions): Promise<Saved> {
-    return this.request<Saved>({
-      method: "POST",
-      path: "/v1/saved-estimates",
-      body,
-      idempotent: true,
       options,
     });
   }
@@ -213,23 +188,22 @@ export abstract class Operations {
   getSavedEstimate(id: string, options?: RequestOptions): Promise<SavedDetail> {
     return this.request<SavedDetail>({
       method: "GET",
-      path: `/v1/saved-estimates/${encodeURIComponent(id)}`,
+      path: `/v2/saved-estimates/${encodeURIComponent(id)}`,
       options,
     });
   }
 
   /**
-   * Read the status and the coverage of the data.
+   * Read the status of the data.
    *
-   * Freshness and verification of the data, the share of estimates withheld, the publications
-   * and the engine in service, and what is covered: Chapter 99 positions and their status,
-   * historical periods, base rates, agreements, fees, and what is out of scope. No key needed;
-   * the pages /status/ and /coverage/ read the same sources.
+   * Whether the data can be relied on now, which publication and engine answer, when the
+   * official sources were last checked, the first day covered and the wrong rates being
+   * corrected. No key needed; the pages /status/ and /coverage/ say more.
    */
   getStatus(options?: RequestOptions): Promise<Status> {
     return this.request<Status>({
       method: "GET",
-      path: "/v1/status",
+      path: "/v2/status",
       auth: false,
       options,
     });

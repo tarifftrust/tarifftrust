@@ -41,16 +41,300 @@ export interface AgreementList {
 }
 
 /**
- * An item of a batch that could not be calculated; the others are.
+ * A saved declaration's answer, with the detail behind it.
+ */
+export interface AuditedDeclaration {
+  /**
+   * The day calculated, in New York.
+   */
+  as_of: string;
+  /**
+   * The detail behind the answer, kept with a saved estimate: the measures examined with the
+   * decision and the reason of each, every duty and fee in full, the answers supposed and what
+   * each other answer gives, the sources, the inputs as calculated and the versions.
+   */
+  audit: Record<string, unknown>;
+  data: Data;
+  /**
+   * formal, unless you send informal. An informal entry has no calculated fees.
+   */
+  entry_type: string | null;
+  /**
+   * The duties of every line, in US dollars.
+   */
+  estimated_duty?: string | null;
+  /**
+   * Those duties as a fraction of the values.
+   */
+  estimated_duty_rate?: string | null;
+  /**
+   * The entry fees of the declaration, in US dollars.
+   */
+  estimated_fees?: string | null;
+  /**
+   * Values, duties, fees, freight and insurance, in US dollars.
+   */
+  estimated_landed_cost?: string | null;
+  /**
+   * The exemption its fees rest on, when one was declared for it.
+   */
+  facts?: Record<string, unknown> | null;
+  /**
+   * Each entry fee, with its amount and source.
+   */
+  fees?: EntryFee[] | null;
+  /**
+   * The freight you sent, in US dollars.
+   */
+  freight?: string | null;
+  /**
+   * The insurance you sent, in US dollars.
+   */
+  insurance?: string | null;
+  /**
+   * While a duty is withheld, the last result established without it.
+   */
+  last_approved?: LastApproved | null;
+  /**
+   * Each line, in the order sent, with its detail.
+   */
+  lines: AuditedLine[];
+  /**
+   * Your reference for it, when you sent one.
+   */
+  reference?: string | null;
+  /**
+   * calculated: every duty is established; without a customs value, a duty that does not need
+   * it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+   * rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the value
+   * for the amounts. needs_information: something is missing to give a figure, and missing says
+   * what to send again, on each line of a declaration. partial: a duty is withheld for now, and
+   * withheld says which; no total is given. unsupported: a regime or a rate the service does
+   * not calculate. not_found: a code the tariff does not have, or that names no product.
+   * not_covered: the date or the chapter is outside the data.
+   */
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
+  /**
+   * How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean otherwise.
+   * By sea they pay the HMF.
+   */
+  transport_mode: string | null;
+  /**
+   * What the amounts do not cover, in words.
+   */
+  warnings?: string[] | null;
+}
+
+/**
+ * A saved estimate's answer, with the detail behind it.
+ */
+export interface AuditedEstimate {
+  /**
+   * The day calculated, in New York.
+   */
+  as_of: string;
+  /**
+   * The detail behind the answer, kept with a saved estimate: the measures examined with the
+   * decision and the reason of each, every duty and fee in full, the answers supposed and what
+   * each other answer gives, the sources, the inputs as calculated and the versions.
+   */
+  audit: Record<string, unknown>;
+  /**
+   * The longer codes under a short one: send one of them as hts.
+   */
+  candidates?: Candidate[] | null;
+  /**
+   * The customs value you sent, in US dollars; null without one.
+   */
+  customs_value: string | null;
+  data: Data;
+  /**
+   * What the code covers, in the words of the tariff.
+   */
+  description: string | null;
+  /**
+   * Each duty, with its rate, amount and source.
+   */
+  duties?: Duty[] | null;
+  /**
+   * formal, unless you send informal. An informal entry has no calculated fees.
+   */
+  entry_type: string | null;
+  /**
+   * All the duties, in US dollars. Null is unknown, never zero.
+   */
+  estimated_duty?: string | null;
+  /**
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
+   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   */
+  estimated_duty_rate?: string | null;
+  /**
+   * All the entry fees, in US dollars; null when one cannot be calculated, or with include_fees
+   * false.
+   */
+  estimated_fees?: string | null;
+  /**
+   * Customs value, duties, fees, freight and insurance, in US dollars; null when the value or a
+   * fee asked for is not known.
+   */
+  estimated_landed_cost?: string | null;
+  /**
+   * The answers this estimate rests on, those you sent and those supposed: the ordinary case of
+   * each question a rule asks of these goods. Send any of them in facts to change the estimate;
+   * GET /v2/facts gives each one's question and answers.
+   */
+  facts?: Record<string, unknown> | null;
+  /**
+   * Each entry fee, with its amount and source.
+   */
+  fees?: EntryFee[] | null;
+  /**
+   * The freight you sent, in US dollars.
+   */
+  freight?: string | null;
+  /**
+   * The HTS code, in digits.
+   */
+  hts: string;
+  /**
+   * The insurance you sent, in US dollars.
+   */
+  insurance?: string | null;
+  /**
+   * While a duty is withheld, the last result established without it.
+   */
+  last_approved?: LastApproved | null;
+  /**
+   * What to send again for a figure, with status needs_information.
+   */
+  missing?: MissingField[] | null;
+  /**
+   * The country of origin.
+   */
+  origin: string;
+  /**
+   * The quantities you sent.
+   */
+  quantities?: Record<string, unknown> | null;
+  /**
+   * calculated: every duty is established; without a customs value, a duty that does not need
+   * it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+   * rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the value
+   * for the amounts. needs_information: something is missing to give a figure, and missing says
+   * what to send again, on each line of a declaration. partial: a duty is withheld for now, and
+   * withheld says which; no total is given. unsupported: a regime or a rate the service does
+   * not calculate. not_found: a code the tariff does not have, or that names no product.
+   * not_covered: the date or the chapter is outside the data.
+   */
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
+  /**
+   * How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean otherwise.
+   * By sea they pay the HMF.
+   */
+  transport_mode: string | null;
+  /**
+   * What the amounts do not cover, in words.
+   */
+  warnings?: string[] | null;
+  /**
+   * What the total leaves out for now.
+   */
+  withheld?: Withheld[] | null;
+}
+
+/**
+ * One line of a saved declaration, with the detail behind it.
+ */
+export interface AuditedLine {
+  /**
+   * The detail behind the answer, kept with a saved estimate: the measures examined with the
+   * decision and the reason of each, every duty and fee in full, the answers supposed and what
+   * each other answer gives, the sources, the inputs as calculated and the versions.
+   */
+  audit: Record<string, unknown>;
+  /**
+   * The longer codes under a short one: send one of them as hts.
+   */
+  candidates?: Candidate[] | null;
+  /**
+   * The customs value you sent, in US dollars; null without one.
+   */
+  customs_value: string | null;
+  /**
+   * What the code covers, in the words of the tariff.
+   */
+  description: string | null;
+  /**
+   * Each duty, with its rate, amount and source.
+   */
+  duties?: Duty[] | null;
+  /**
+   * All the duties, in US dollars. Null is unknown, never zero.
+   */
+  estimated_duty?: string | null;
+  /**
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
+   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   */
+  estimated_duty_rate?: string | null;
+  /**
+   * The answers this estimate rests on, those you sent and those supposed: the ordinary case of
+   * each question a rule asks of these goods. Send any of them in facts to change the estimate;
+   * GET /v2/facts gives each one's question and answers.
+   */
+  facts?: Record<string, unknown> | null;
+  /**
+   * The HTS code, in digits.
+   */
+  hts: string;
+  /**
+   * What to send again for a figure, with status needs_information.
+   */
+  missing?: MissingField[] | null;
+  /**
+   * The country of origin.
+   */
+  origin: string;
+  /**
+   * The quantities you sent.
+   */
+  quantities?: Record<string, unknown> | null;
+  /**
+   * Your reference for it, when you sent one.
+   */
+  reference?: string | null;
+  /**
+   * calculated: every duty is established; without a customs value, a duty that does not need
+   * it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+   * rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the value
+   * for the amounts. needs_information: something is missing to give a figure, and missing says
+   * what to send again, on each line of a declaration. partial: a duty is withheld for now, and
+   * withheld says which; no total is given. unsupported: a regime or a rate the service does
+   * not calculate. not_found: a code the tariff does not have, or that names no product.
+   * not_covered: the date or the chapter is outside the data.
+   */
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
+  /**
+   * What the amounts do not cover, in words.
+   */
+  warnings?: string[] | null;
+  /**
+   * What the total leaves out for now.
+   */
+  withheld?: Withheld[] | null;
+}
+
+/**
+ * An item of a batch that could not be calculated.
  */
 export interface BatchFailure {
   /**
-   * Why it has no result: invalid_input with its fields, or no data for its date yet
-   * (data_unavailable, edition_not_published): send it again later.
+   * Why.
    */
   error: Error;
   /**
-   * The item's position in items, from 0.
+   * Its position in the batch, from 0.
    */
   index: number;
 }
@@ -71,15 +355,15 @@ export interface BatchItem {
    */
   customs_value?: number | string | null;
   /**
-   * A formal entry pays the merchandise processing fee (MPF) on its value; an informal one, the
-   * fixed informal fee.
+   * A formal entry pays the merchandise processing fee (MPF) on its value. An informal entry
+   * pays a fixed fee the estimate does not calculate: it gives no fees.
    *
    * Default: "formal".
    */
   entry_type?: "formal" | "informal";
   /**
-   * Answers to the questions of the facts catalogue (GET /v1/facts), by name. A name outside
-   * the catalogue is reported in the result and never used.
+   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
+   * the catalogue is said in warnings and never used.
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -94,11 +378,11 @@ export interface BatchItem {
    */
   hts: string;
   /**
-   * Count the entry fees (MPF, HMF) of a declaration of this product alone; the landed cost
-   * includes them only then. The MPF is charged once on a declaration: for several products
-   * entered together, use POST /v1/estimates/entry.
+   * Count the entry fees (MPF, HMF) of a declaration of this product alone. Each product is
+   * estimated as its own declaration: the MPF is charged once on a declaration, so for several
+   * products entered together use POST /v2/estimates/entry.
    *
-   * Default: false.
+   * Default: true.
    */
   include_fees?: boolean;
   /**
@@ -108,21 +392,33 @@ export interface BatchItem {
    */
   insurance?: number | string;
   /**
+   * A name for the saved estimate; needs save.
+   */
+  label?: string;
+  /**
    * Country of origin: where the goods were produced, not where they ship from. ISO 3166-1
    * alpha-2 (XK for Kosovo), or a code U.S. Customs files with (BU, GZ, KV, WE).
    */
   origin: string;
   /**
    * A trade agreement's symbol from the HTS special column (S for USMCA, KR for KORUS…; GET
-   * /v1/agreements). Giving it declares that the goods meet its rules of origin and that you
+   * /v2/agreements). Giving it declares that the goods meet its rules of origin and that you
    * hold the proof.
    */
   preference?: string | null;
   /**
    * Quantities in the units a duty counts (kg, l, item, dozen, pair, proof_liter…),
-   * nonnegative. A result names the quantity it needs in required_fields ("quantities.kg").
+   * nonnegative. An answer names the quantity it needs in missing ("quantities.kg").
    */
   quantities?: Record<string, number | string>;
+  /**
+   * Save the estimate: only a saved estimate keeps its detail, is reported, and is notified if
+   * a rate proves wrong. An answer without a figure is not saved. Send an Idempotency-Key:
+   * without one, a request sent again after a timeout saves twice.
+   *
+   * Default: false.
+   */
+  save?: boolean;
   /**
    * How the goods arrive; by sea they also pay the harbor maintenance fee (HMF). Unset: land
    * for goods of Canada or Mexico, ocean otherwise.
@@ -131,7 +427,7 @@ export interface BatchItem {
 }
 
 /**
- * Up to 200 products, each calculated on its own: POST /v1/estimates/batch.
+ * Up to 200 products, each calculated on its own: POST /v2/estimates/batch.
  */
 export interface BatchRequest {
   /**
@@ -139,30 +435,19 @@ export interface BatchRequest {
    */
   items: BatchItem[];
   /**
-   * Calculate with this publication of the rules rather than the one in force on the date: a
-   * saved result's publication_id replays it.
+   * Calculate with this publication of the rules instead of the one in service on that date:
+   * the data.publication_id of an earlier answer gives the same result again, as long as the
+   * engine has not changed.
    */
   publication_id?: string | null;
 }
 
 /**
- * The products of a batch, each calculated on its own.
+ * Each item of a batch, in the order sent.
  */
 export interface BatchResult {
   /**
-   * The freshness of each publication used, by its id.
-   */
-  freshness: Record<string, Freshness>;
-  /**
-   * The publication every item was calculated with; null when they differ (their dates do).
-   */
-  publication_id: string | null;
-  /**
-   * Every publication used.
-   */
-  publication_ids: string[];
-  /**
-   * One per item, in the order sent: its result, or its error.
+   * Each item, its estimate or its error.
    */
   results: (BatchSuccess | BatchFailure)[];
 }
@@ -172,317 +457,27 @@ export interface BatchResult {
  */
 export interface BatchSuccess {
   /**
-   * The item's position in items, from 0.
+   * Its position in the batch, from 0.
    */
   index: number;
   /**
-   * Its result, as POST /v1/estimates gives it, without last_approved.
+   * Its estimate, as POST /v2/estimates gives it, without last_approved.
    */
-  result: CalculationResult;
+  result: Estimate;
 }
 
 /**
- * One product: the line, with the fees of its one-line declaration.
- */
-export interface CalculationResult {
-  /**
-   * Measures whose relations do not settle (two caps on the same duties, contradictory
-   * relations): the duties concerned stay unresolved, and estimated_duty is null.
-   */
-  alerts?: string[];
-  /**
-   * The facts the request answered, each with the measures it decides (those whose decision
-   * another answer would change); none when, given the other answers, it decides nothing.
-   */
-  answers?: Record<string, unknown>[];
-  /**
-   * The legal day the duties are calculated for, in New York time.
-   */
-  as_of: string;
-  /**
-   * Instant of effect (New York time) when a transition on that day depends on the hour.
-   */
-  as_of_instant?: string | null;
-  /**
-   * The answers this estimate assumed because none was declared (the ordinary case): for each,
-   * the fact, the value assumed, its question, its type and choices, and under alternatives
-   * what each other answer would give. Send your own answer in facts to replace one.
-   */
-  assumptions?: Record<string, unknown>[];
-  /**
-   * The base rate as the tariff prints it, in the column read: general, special (an agreement
-   * claimed and granted) or column 2.
-   */
-  base_rate: string | null;
-  /**
-   * With a shorter code: the 8- and 10-digit lines under it, up to 25.
-   */
-  candidates?: Candidate[] | null;
-  /**
-   * The line's three rate columns as printed: general, special and other (column 2).
-   */
-  column_rates?: Record<string, string> | null;
-  /**
-   * The duties counted, the base duty first, each with its amount and its source.
-   */
-  components: Component[];
-  /**
-   * Always USD: every amount is in US dollars.
-   */
-  currency: "USD";
-  /**
-   * The line's descriptions, from the heading down.
-   */
-  description?: string | null;
-  /**
-   * The duty as a share of the customs value, for comparison.
-   */
-  duty_rate?: DutyRate | null;
-  /**
-   * The version of the engine that calculated it.
-   */
-  engine_version: string;
-  /**
-   * What the estimate covers, in words: implemented measures only, unknown never zero.
-   */
-  estimate_scope: string;
-  /**
-   * Implemented measures only. Null means unknown, never zero: information is missing, a
-   * position is in review or an incident suspends it.
-   */
-  estimated_duty: string | null;
-  /**
-   * Customs value + estimated duty + freight + insurance, and the entry fees only when
-   * include_fees was asked. Null while the duty, an asked fee or the value is unknown.
-   */
-  estimated_landed_cost: string | null;
-  /**
-   * Decision, reason and source of every measure examined for this case.
-   */
-  examined_measures?: ExaminedMeasure[];
-  /**
-   * The entry fees asked (include_fees), for a declaration of this product.
-   */
-  fees: Fee[];
-  /**
-   * not_requested: include_fees is false. estimated: every fee owed is known. partial: one is
-   * not (a value is missing, or the date or entry type has no fee schedule). not_covered: an
-   * entry regime outside the service, no fee calculated. include_fees is false by default for
-   * one product.
-   */
-  fees_status: "not_requested" | "not_covered" | "estimated" | "partial";
-  /**
-   * The tariff's footnotes for the line, which may impose conditions.
-   */
-  footnotes?: unknown[] | null;
-  /**
-   * Whether the sources were verified recently enough.
-   */
-  freshness?: Freshness | null;
-  /**
-   * The HTS code calculated, in digits.
-   */
-  hts: string;
-  /**
-   * One question per missing input, to ask before calculating again.
-   */
-  input_guidance?: InputGuidance[] | null;
-  /**
-   * When the publication was prepared: the state of knowledge the result rests on.
-   */
-  knowledge_at: string | null;
-  /**
-   * Sum of the components whose validity is established; null when none is.
-   */
-  known_duty_subtotal: string | null;
-  /**
-   * Sum of the fees established in fees; null when fees is empty (not asked, or no fee
-   * established for this date, entry type or regime).
-   */
-  known_fee_subtotal?: string | null;
-  /**
-   * In a history: the IEEPA duties established at that point; 0.00 when none applies, from
-   * 2026-02-24; null otherwise.
-   */
-  known_ieepa_subtotal?: string | null;
-  /**
-   * When positions in review or incidents withhold part of the result: the last result
-   * established without them, dated. Historical only: never part of a subtotal, total or
-   * exposure. Absent from batch items.
-   */
-  last_approved?: LastApproved | null;
-  /**
-   * How the code was found in the tariff.
-   */
-  match: Match;
-  /**
-   * The country of origin, as sent.
-   */
-  origin: string;
-  /**
-   * The workspace's standing answers applied, each marked when the request overrode it.
-   */
-  policies?: Record<string, unknown>[];
-  /**
-   * What identifies this result for a replay: the engine result's checksum, the request as the
-   * engine read it, the legal end of its publication and the image of the engine.
-   */
-  provenance?: Record<string, unknown> | null;
-  /**
-   * The checksum of that publication's files.
-   */
-  publication_checksum: string | null;
-  /**
-   * The publication of the rules it was calculated with: send it as publication_id to calculate
-   * again with the same rules.
-   */
-  publication_id: string;
-  /**
-   * The edition of the US tariff, in words.
-   */
-  publication_label: string;
-  /**
-   * Your reference for the line, as sent.
-   */
-  reference?: string | null;
-  /**
-   * When a measure replaces the base duty: the base duty replaced, with the reason; in no
-   * total.
-   */
-  replaced_base?: Record<string, unknown> | null;
-  /**
-   * The inputs still missing, each asked in input_guidance.
-   */
-  required_fields: string[];
-  /**
-   * Shown apart, subject to a position in review; in no total.
-   */
-  reserved_components?: Component[];
-  /**
-   * What withholds part of the estimate: a position in review (position), a wrong-rate incident
-   * (incident), an official notice not yet read (notice), a measure in force whose rate is not
-   * announced yet (pending_rate).
-   */
-  review_pending?: ReviewPending[];
-  /**
-   * With unanswered yes/no or choice facts that have no ordinary case, every coherent
-   * combination of their answers (up to twelve) and exact bounds; beyond, a prudent range. Null
-   * otherwise.
-   */
-  scenarios?: Scenarios | null;
-  /**
-   * Every official document the result rests on.
-   */
-  sources: Source[];
-  /**
-   * The statistical units the tariff prints for the line (No., kg).
-   */
-  statistical_units?: string[] | null;
-  /**
-   * What the answer is, to read before its amounts. calculated: every component is established.
-   * needs_information: what you can give is missing (a fact, a quantity, the value, a more
-   * precise code or the instant of effect), asked in input_guidance. partial: a component stays
-   * unknown that you cannot give (a position in review, an incident, incomplete coverage),
-   * listed in review_pending. unsupported: a rate, a formula or an entry regime the engine does
-   * not calculate. not_covered: a date or a chapter outside the data, or a code of chapters 98
-   * and 99, which needs the product's own code. not_found: no such code in the tariff, nor any
-   * more precise one.
-   */
-  status: "calculated" | "partial" | "needs_information" | "unsupported" | "not_found" | "not_covered";
-  /**
-   * The entry fees (MPF, HMF) of a declaration of this product alone, when include_fees was
-   * asked; null when they were not asked, or while one of them is not established.
-   */
-  total_fees: string | null;
-  /**
-   * Whether the scheduled verification of the sources works; separate from freshness.
-   */
-  verification?: Verification | null;
-  /**
-   * Cautions in words, to show with the result: a preference declared, footnotes, fees not
-   * established, sources not verified recently.
-   */
-  warnings: string[];
-}
-
-/**
- * A line of the tariff under a code too short to calculate.
+ * A longer code under a short one.
  */
 export interface Candidate {
   /**
-   * Its description.
+   * What it covers, in the words of the tariff.
    */
-  description: string;
+  description: string | null;
   /**
-   * A line under the code sent, of 8 or 10 digits.
+   * The code, in digits.
    */
   hts: string;
-}
-
-/**
- * One duty counted in the result: the base duty, a Chapter 99 measure, or a cap's deduction.
- */
-export interface Component {
-  /**
-   * The duty in dollars; null when unknown (an input is missing, or the rate is not calculated
-   * or not announced yet). Negative for a cap's deduction.
-   */
-  amount: string | null;
-  /**
-   * The base rate as the tariff prints it; null for a measure, whose rate is in terms.
-   */
-  expression?: string | null;
-  /**
-   * The measure's Chapter 99 heading; null for the base duty.
-   */
-  heading?: string | null;
-  /**
-   * base_rate for the base duty; otherwise the identifier of the measure.
-   */
-  id: string;
-  /**
-   * The duty in words: Base duty, Column 2, or the measure's title.
-   */
-  label: string;
-  /**
-   * base for the base duty; otherwise the measure's program, as 301, 232, 201 or 338.
-   */
-  program: string;
-  /**
-   * The inputs its amount still needs: customs_value, quantities.<unit>, facts.<name>.
-   */
-  required_fields: string[];
-  /**
-   * cap for a ceiling's deduction: what exceeds the ceiling, taken off the duties it limits.
-   * Absent otherwise.
-   */
-  role?: string | null;
-  /**
-   * The identifier of the rule the measure comes from. Null for the base duty.
-   */
-  rule?: string | null;
-  /**
-   * The version of that rule.
-   */
-  rule_version?: string | null;
-  /**
-   * The official document of this rate.
-   */
-  source: Source;
-  /**
-   * calculated: the amount is established. needs_information: an input is missing, named in
-   * required_fields. unsupported: a rate the engine does not calculate. pending: in force at a
-   * rate the official text has not announced yet.
-   */
-  status: "calculated" | "needs_information" | "unsupported" | "pending";
-  /**
-   * The rate as typed terms, added together; null when the printed rate cannot be read.
-   */
-  terms: RateTerm[] | null;
-  /**
-   * May still be removed by an unanswered question: shown, but not in known_duty_subtotal.
-   */
-  uncertain?: boolean | null;
 }
 
 /**
@@ -504,36 +499,164 @@ export interface CoveredWindow {
 }
 
 /**
- * The duty as a share of the customs value, for comparison: implemented duties only, without
- * the fees and AD/CVD.
+ * The data the answer rests on.
  */
-export interface DutyRate {
+export interface Data {
   /**
-   * What the rate is, in words.
+   * When the official sources were last checked; null for a past edition.
    */
-  basis?: string | null;
+  checked_at?: string | null;
   /**
-   * The duty as a decimal fraction of the customs value (0.415 for 41.5%).
+   * The edition of the US tariff, in words.
    */
-  estimated_ad_valorem_rate?: string | null;
+  edition: string | null;
   /**
-   * complete: the result is calculated and every duty is a share of the value. estimated: the
-   * share of the duties known, the result not settled. needs_information: an input other than
-   * the value is missing. not_representable: a duty is no share of the value (per unit, capped
-   * or undecided). unsupported: a rate the engine does not read. not_covered: no rate is read.
+   * The publication of the rules it was calculated with: send it as publication_id to calculate
+   * again with the same rules.
    */
-  status: "not_covered" | "needs_information" | "unsupported" | "not_representable" | "estimated" | "complete";
+  publication_id: string | null;
   /**
-   * The same, given only when the status is complete.
+   * True when those checks are older than they should be.
    */
-  total_ad_valorem_rate?: string | null;
+  stale?: boolean | null;
 }
 
 /**
- * A whole import declaration: every line, then the MPF and the HMF once on the declaration.
- * POST /v1/estimates/entry.
+ * The estimate of a whole import declaration: each line, and its fees once.
  */
-export interface EntryInput {
+export interface Declaration {
+  /**
+   * The day calculated, in New York.
+   */
+  as_of: string;
+  data: Data;
+  /**
+   * formal, unless you send informal. An informal entry has no calculated fees.
+   */
+  entry_type: string | null;
+  /**
+   * The duties of every line, in US dollars.
+   */
+  estimated_duty?: string | null;
+  /**
+   * Those duties as a fraction of the values.
+   */
+  estimated_duty_rate?: string | null;
+  /**
+   * The entry fees of the declaration, in US dollars.
+   */
+  estimated_fees?: string | null;
+  /**
+   * Values, duties, fees, freight and insurance, in US dollars.
+   */
+  estimated_landed_cost?: string | null;
+  /**
+   * The exemption its fees rest on, when one was declared for it.
+   */
+  facts?: Record<string, unknown> | null;
+  /**
+   * Each entry fee, with its amount and source.
+   */
+  fees?: EntryFee[] | null;
+  /**
+   * The freight you sent, in US dollars.
+   */
+  freight?: string | null;
+  /**
+   * The insurance you sent, in US dollars.
+   */
+  insurance?: string | null;
+  /**
+   * While a duty is withheld, the last result established without it.
+   */
+  last_approved?: LastApproved | null;
+  /**
+   * Each line, in the order sent.
+   */
+  lines: Line[];
+  /**
+   * Your reference for it, when you sent one.
+   */
+  reference?: string | null;
+  /**
+   * Sent with save: its identifier, to read it with its detail.
+   */
+  saved_estimate_id?: string | null;
+  /**
+   * calculated: every duty is established; without a customs value, a duty that does not need
+   * it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+   * rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the value
+   * for the amounts. needs_information: something is missing to give a figure, and missing says
+   * what to send again, on each line of a declaration. partial: a duty is withheld for now, and
+   * withheld says which; no total is given. unsupported: a regime or a rate the service does
+   * not calculate. not_found: a code the tariff does not have, or that names no product.
+   * not_covered: the date or the chapter is outside the data.
+   */
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
+  /**
+   * How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean otherwise.
+   * By sea they pay the HMF.
+   */
+  transport_mode: string | null;
+  /**
+   * What the amounts do not cover, in words.
+   */
+  warnings?: string[] | null;
+}
+
+/**
+ * One duty of the estimate.
+ */
+export interface Duty {
+  /**
+   * Its amount in US dollars; null when it cannot be calculated yet.
+   */
+  amount: string | null;
+  /**
+   * Its Chapter 99 heading; null for the base duty.
+   */
+  heading: string | null;
+  /**
+   * What the duty is, in words.
+   */
+  name: string;
+  /**
+   * Its rate, as a person reads it.
+   */
+  rate: string | null;
+  /**
+   * The official document it rests on.
+   */
+  source: Source | null;
+}
+
+/**
+ * One entry fee of the declaration.
+ */
+export interface EntryFee {
+  /**
+   * Its amount in US dollars; null when it cannot be calculated yet.
+   */
+  amount: string | null;
+  /**
+   * What the fee is, in words: the merchandise processing fee (MPF) or the harbor maintenance
+   * fee (HMF).
+   */
+  name: string;
+  /**
+   * Why its amount is what it is, when that needs saying.
+   */
+  note?: string | null;
+  /**
+   * The official document it rests on.
+   */
+  source: Source | null;
+}
+
+/**
+ * A whole import declaration: POST /v2/estimates/entry.
+ */
+export interface EntryRequest {
   /**
    * When the goods are entered for consumption. A day, in New York time ("2026-04-05"); or, on
    * a day when a measure takes effect at a stated hour, the instant of entry with its UTC
@@ -541,14 +664,14 @@ export interface EntryInput {
    */
   as_of?: string | null;
   /**
-   * A formal entry pays the merchandise processing fee (MPF) on its value; an informal one, the
-   * fixed informal fee.
+   * A formal entry pays the merchandise processing fee (MPF) on its value. An informal entry
+   * pays a fixed fee the estimate does not calculate: it gives no fees.
    *
    * Default: "formal".
    */
   entry_type?: "formal" | "informal";
   /**
-   * Answers that hold for the whole declaration (GET /v1/facts, scope entry or shipment).
+   * Answers that hold for the whole declaration (GET /v2/facts, scope entry or shipment).
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -570,12 +693,17 @@ export interface EntryInput {
    */
   insurance?: number | string;
   /**
+   * A name for the saved estimate; needs save.
+   */
+  label?: string;
+  /**
    * The lines of the declaration, each a product.
    */
   lines: LineInput[];
   /**
-   * Calculate with this publication of the rules rather than the one in force on the date: a
-   * saved result's publication_id replays it.
+   * Calculate with this publication of the rules instead of the one in service on that date:
+   * the data.publication_id of an earlier answer gives the same result again, as long as the
+   * engine has not changed.
    */
   publication_id?: string | null;
   /**
@@ -583,149 +711,18 @@ export interface EntryInput {
    */
   reference?: string;
   /**
+   * Save the estimate: only a saved estimate keeps its detail, is reported, and is notified if
+   * a rate proves wrong. An answer without a figure is not saved. Send an Idempotency-Key:
+   * without one, a request sent again after a timeout saves twice.
+   *
+   * Default: false.
+   */
+  save?: boolean;
+  /**
    * How the goods arrive; by sea they also pay the harbor maintenance fee (HMF). Unset: land
    * for goods of Canada or Mexico, ocean otherwise.
    */
   transport_mode?: "air" | "ocean" | "land" | null;
-}
-
-/**
- * A whole declaration: its lines, then its fees, once.
- */
-export interface EntryResult {
-  /**
-   * The legal day of the declaration, in New York time.
-   */
-  as_of: string;
-  /**
-   * Instant of effect (New York time) when a transition on that day depends on the hour.
-   */
-  as_of_instant?: string | null;
-  /**
-   * Always USD: every amount is in US dollars.
-   */
-  currency?: "USD" | null;
-  /**
-   * The version of the engine that calculated it.
-   */
-  engine_version?: string | null;
-  /**
-   * formal or informal, as sent.
-   */
-  entry_type?: string | null;
-  /**
-   * What the estimate covers, in words: implemented measures only, unknown never zero.
-   */
-  estimate_scope?: string | null;
-  /**
-   * The duty of the declaration; null unless every line's is known. Unknown is never zero.
-   */
-  estimated_duty: string | null;
-  /**
-   * Customs values + estimated duty + freight + insurance, and the entry fees when include_fees
-   * (true by default for a declaration). Null while the duty, an asked fee or a value is
-   * unknown.
-   */
-  estimated_landed_cost: string | null;
-  /**
-   * MPF and HMF, once for the declaration.
-   */
-  fees: Fee[];
-  /**
-   * not_requested: include_fees is false. estimated: every fee owed is known. partial: one is
-   * not (a value is missing, or the date or entry type has no fee schedule). not_covered: an
-   * entry regime outside the service, no fee calculated. include_fees is true by default for a
-   * declaration.
-   */
-  fees_status: "not_requested" | "not_covered" | "estimated" | "partial";
-  /**
-   * Whether the sources were verified recently enough.
-   */
-  freshness?: Freshness | null;
-  /**
-   * Empty: each line asks its own questions, in lines.
-   */
-  input_guidance?: InputGuidance[] | null;
-  /**
-   * Always entry.
-   */
-  kind: "entry";
-  /**
-   * When the publication was prepared: the state of knowledge the result rests on.
-   */
-  knowledge_at?: string | null;
-  /**
-   * Sum of the lines' established subtotals; null when none is.
-   */
-  known_duty_subtotal: string | null;
-  /**
-   * When positions in review or incidents withhold part of the result: the last result
-   * established without them, dated. Historical only: never part of a subtotal, total or
-   * exposure. Absent from batch items.
-   */
-  last_approved?: LastApproved | null;
-  /**
-   * Each line's result, in the order sent.
-   */
-  lines: LineResult[];
-  /**
-   * The workspace's standing answers applied, each marked when the request overrode it.
-   */
-  policies?: Record<string, unknown>[];
-  /**
-   * What identifies this result for a replay: the engine result's checksum, the request as the
-   * engine read it, the legal end of its publication and the image of the engine.
-   */
-  provenance?: Record<string, unknown> | null;
-  /**
-   * The checksum of that publication's files.
-   */
-  publication_checksum?: string | null;
-  /**
-   * The publication of the rules it was calculated with: send it as publication_id to calculate
-   * again with the same rules.
-   */
-  publication_id: string;
-  /**
-   * The edition of the US tariff, in words.
-   */
-  publication_label?: string | null;
-  /**
-   * Your reference for the declaration, as sent.
-   */
-  reference?: string | null;
-  /**
-   * Empty: each line names its own, in lines.
-   */
-  required_fields: string[];
-  /**
-   * With unanswered yes/no or choice facts that have no ordinary case, every coherent
-   * combination of their answers (up to twelve) and exact bounds; beyond, a prudent range. Null
-   * otherwise.
-   */
-  scenarios: Scenarios | null;
-  /**
-   * The status of the declaration: that of its least settled line.
-   */
-  status: "calculated" | "partial" | "needs_information" | "unsupported" | "not_found" | "not_covered";
-  /**
-   * The entry fees (MPF, HMF) of the declaration, counted once; null when include_fees is
-   * false, or while one of them is not established.
-   */
-  total_fees: string | null;
-  /**
-   * The transport mode, as sent or inferred.
-   */
-  transport_mode?: string | null;
-  /**
-   * Whether the scheduled verification of the sources works; separate from freshness.
-   */
-  verification?: Verification | null;
-  /**
-   * Cautions on the declaration: its fees, the freshness and verification of the sources; each
-   * line has its own.
-   */
-  warnings: string[];
 }
 
 /**
@@ -762,9 +759,125 @@ export interface ErrorResponse {
 }
 
 /**
- * One product at a date: POST /v1/estimates.
+ * The estimate of one product.
  */
-export interface EstimateInput {
+export interface Estimate {
+  /**
+   * The day calculated, in New York.
+   */
+  as_of: string;
+  /**
+   * The longer codes under a short one: send one of them as hts.
+   */
+  candidates?: Candidate[] | null;
+  /**
+   * The customs value you sent, in US dollars; null without one.
+   */
+  customs_value: string | null;
+  data: Data;
+  /**
+   * What the code covers, in the words of the tariff.
+   */
+  description: string | null;
+  /**
+   * Each duty, with its rate, amount and source.
+   */
+  duties?: Duty[] | null;
+  /**
+   * formal, unless you send informal. An informal entry has no calculated fees.
+   */
+  entry_type: string | null;
+  /**
+   * All the duties, in US dollars. Null is unknown, never zero.
+   */
+  estimated_duty?: string | null;
+  /**
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
+   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   */
+  estimated_duty_rate?: string | null;
+  /**
+   * All the entry fees, in US dollars; null when one cannot be calculated, or with include_fees
+   * false.
+   */
+  estimated_fees?: string | null;
+  /**
+   * Customs value, duties, fees, freight and insurance, in US dollars; null when the value or a
+   * fee asked for is not known.
+   */
+  estimated_landed_cost?: string | null;
+  /**
+   * The answers this estimate rests on, those you sent and those supposed: the ordinary case of
+   * each question a rule asks of these goods. Send any of them in facts to change the estimate;
+   * GET /v2/facts gives each one's question and answers.
+   */
+  facts?: Record<string, unknown> | null;
+  /**
+   * Each entry fee, with its amount and source.
+   */
+  fees?: EntryFee[] | null;
+  /**
+   * The freight you sent, in US dollars.
+   */
+  freight?: string | null;
+  /**
+   * The HTS code, in digits.
+   */
+  hts: string;
+  /**
+   * The insurance you sent, in US dollars.
+   */
+  insurance?: string | null;
+  /**
+   * While a duty is withheld, the last result established without it.
+   */
+  last_approved?: LastApproved | null;
+  /**
+   * What to send again for a figure, with status needs_information.
+   */
+  missing?: MissingField[] | null;
+  /**
+   * The country of origin.
+   */
+  origin: string;
+  /**
+   * The quantities you sent.
+   */
+  quantities?: Record<string, unknown> | null;
+  /**
+   * Sent with save: its identifier, to read it with its detail.
+   */
+  saved_estimate_id?: string | null;
+  /**
+   * calculated: every duty is established; without a customs value, a duty that does not need
+   * it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+   * rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the value
+   * for the amounts. needs_information: something is missing to give a figure, and missing says
+   * what to send again, on each line of a declaration. partial: a duty is withheld for now, and
+   * withheld says which; no total is given. unsupported: a regime or a rate the service does
+   * not calculate. not_found: a code the tariff does not have, or that names no product.
+   * not_covered: the date or the chapter is outside the data.
+   */
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
+  /**
+   * How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean otherwise.
+   * By sea they pay the HMF.
+   */
+  transport_mode: string | null;
+  /**
+   * What the amounts do not cover, in words.
+   */
+  warnings?: string[] | null;
+  /**
+   * What the total leaves out for now.
+   */
+  withheld?: Withheld[] | null;
+}
+
+/**
+ * One product at a date: POST /v2/estimates.
+ */
+export interface EstimateRequest {
   /**
    * When the goods are entered for consumption. A day, in New York time ("2026-04-05"); or, on
    * a day when a measure takes effect at a stated hour, the instant of entry with its UTC
@@ -777,15 +890,15 @@ export interface EstimateInput {
    */
   customs_value?: number | string | null;
   /**
-   * A formal entry pays the merchandise processing fee (MPF) on its value; an informal one, the
-   * fixed informal fee.
+   * A formal entry pays the merchandise processing fee (MPF) on its value. An informal entry
+   * pays a fixed fee the estimate does not calculate: it gives no fees.
    *
    * Default: "formal".
    */
   entry_type?: "formal" | "informal";
   /**
-   * Answers to the questions of the facts catalogue (GET /v1/facts), by name. A name outside
-   * the catalogue is reported in the result and never used.
+   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
+   * the catalogue is said in warnings and never used.
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -800,11 +913,11 @@ export interface EstimateInput {
    */
   hts: string;
   /**
-   * Count the entry fees (MPF, HMF) of a declaration of this product alone; the landed cost
-   * includes them only then. The MPF is charged once on a declaration: for several products
-   * entered together, use POST /v1/estimates/entry.
+   * Count the entry fees (MPF, HMF) of a declaration of this product alone. Each product is
+   * estimated as its own declaration: the MPF is charged once on a declaration, so for several
+   * products entered together use POST /v2/estimates/entry.
    *
-   * Default: false.
+   * Default: true.
    */
   include_fees?: boolean;
   /**
@@ -814,78 +927,44 @@ export interface EstimateInput {
    */
   insurance?: number | string;
   /**
+   * A name for the saved estimate; needs save.
+   */
+  label?: string;
+  /**
    * Country of origin: where the goods were produced, not where they ship from. ISO 3166-1
    * alpha-2 (XK for Kosovo), or a code U.S. Customs files with (BU, GZ, KV, WE).
    */
   origin: string;
   /**
    * A trade agreement's symbol from the HTS special column (S for USMCA, KR for KORUS…; GET
-   * /v1/agreements). Giving it declares that the goods meet its rules of origin and that you
+   * /v2/agreements). Giving it declares that the goods meet its rules of origin and that you
    * hold the proof.
    */
   preference?: string | null;
   /**
-   * Calculate with this publication of the rules rather than the one in force on the date: a
-   * saved result's publication_id replays it.
+   * Calculate with this publication of the rules instead of the one in service on that date:
+   * the data.publication_id of an earlier answer gives the same result again, as long as the
+   * engine has not changed.
    */
   publication_id?: string | null;
   /**
    * Quantities in the units a duty counts (kg, l, item, dozen, pair, proof_liter…),
-   * nonnegative. A result names the quantity it needs in required_fields ("quantities.kg").
+   * nonnegative. An answer names the quantity it needs in missing ("quantities.kg").
    */
   quantities?: Record<string, number | string>;
+  /**
+   * Save the estimate: only a saved estimate keeps its detail, is reported, and is notified if
+   * a rate proves wrong. An answer without a figure is not saved. Send an Idempotency-Key:
+   * without one, a request sent again after a timeout saves twice.
+   *
+   * Default: false.
+   */
+  save?: boolean;
   /**
    * How the goods arrive; by sea they also pay the harbor maintenance fee (HMF). Unset: land
    * for goods of Canada or Mexico, ocean otherwise.
    */
   transport_mode?: "air" | "ocean" | "land" | null;
-}
-
-/**
- * The decision on every Chapter 99 measure examined for this case.
- */
-export interface ExaminedMeasure {
-  /**
-   * applied: its conditions hold. excluded: one fails, or another measure removes it.
-   * undetermined: an unanswered question decides.
-   */
-  decision: "applied" | "excluded" | "undetermined";
-  /**
-   * The facts its conditions read: the questions this measure decides.
-   */
-  facts?: string[];
-  /**
-   * Its Chapter 99 heading.
-   */
-  heading: string;
-  /**
-   * Its title.
-   */
-  label: string;
-  /**
-   * The identifier of the measure.
-   */
-  measure: string;
-  /**
-   * Its program, as 301, 232, 201 or 338.
-   */
-  program: string;
-  /**
-   * Why, in words: the condition that decided, or what removed it.
-   */
-  reason: string;
-  /**
-   * The identifier of the rule the measure comes from.
-   */
-  rule: string;
-  /**
-   * The version of that rule.
-   */
-  rule_version: string | null;
-  /**
-   * The official document of the measure.
-   */
-  source: Source;
 }
 
 /**
@@ -911,7 +990,7 @@ export interface FactDefinition {
    */
   choices?: FactChoice[];
   /**
-   * The ordinary case, assumed when unanswered and said in assumptions.
+   * The ordinary case, supposed when unanswered.
    */
   default?: unknown;
   /**
@@ -953,58 +1032,123 @@ export interface FactList {
 }
 
 /**
- * An entry fee, once for the declaration.
+ * The product at one change of the tariff.
  */
-export interface Fee {
+export interface HistoryPoint {
   /**
-   * The fee in dollars; null when unknown.
+   * The day calculated, in New York.
    */
-  amount: string | null;
+  as_of: string;
   /**
-   * The exemption it rests on, if any: declared, or that of goods originating under the
-   * agreement claimed.
+   * The longer codes under a short one: send one of them as hts.
    */
-  assumption?: string | null;
+  candidates?: Candidate[] | null;
   /**
-   * The value it is calculated on: the customs values of the lines subject to it; null when one
-   * is missing.
+   * The customs value you sent, in US dollars; null without one.
    */
-  basis?: string | null;
+  customs_value: string | null;
+  data: Data;
   /**
-   * MPF (merchandise processing fee) or HMF (harbor maintenance fee).
+   * What the code covers, in the words of the tariff.
    */
-  label: string;
+  description: string | null;
   /**
-   * The official fee schedule.
+   * Each duty, with its rate, amount and source.
    */
-  source: Source;
+  duties?: Duty[] | null;
+  /**
+   * formal, unless you send informal. An informal entry has no calculated fees.
+   */
+  entry_type: string | null;
+  /**
+   * All the duties, in US dollars. Null is unknown, never zero.
+   */
+  estimated_duty?: string | null;
+  /**
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
+   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   */
+  estimated_duty_rate?: string | null;
+  /**
+   * All the entry fees, in US dollars; null when one cannot be calculated, or with include_fees
+   * false.
+   */
+  estimated_fees?: string | null;
+  /**
+   * Customs value, duties, fees, freight and insurance, in US dollars; null when the value or a
+   * fee asked for is not known.
+   */
+  estimated_landed_cost?: string | null;
+  /**
+   * The answers this estimate rests on, those you sent and those supposed: the ordinary case of
+   * each question a rule asks of these goods. Send any of them in facts to change the estimate;
+   * GET /v2/facts gives each one's question and answers.
+   */
+  facts?: Record<string, unknown> | null;
+  /**
+   * Each entry fee, with its amount and source.
+   */
+  fees?: EntryFee[] | null;
+  /**
+   * The freight you sent, in US dollars.
+   */
+  freight?: string | null;
+  /**
+   * The HTS code, in digits.
+   */
+  hts: string;
+  /**
+   * The insurance you sent, in US dollars.
+   */
+  insurance?: string | null;
+  /**
+   * What the IEEPA duties amount to that day, in US dollars; null when not established.
+   */
+  known_ieepa_duty?: string | null;
+  /**
+   * While a duty is withheld, the last result established without it.
+   */
+  last_approved?: LastApproved | null;
+  /**
+   * What to send again for a figure, with status needs_information.
+   */
+  missing?: MissingField[] | null;
+  /**
+   * The country of origin.
+   */
+  origin: string;
+  /**
+   * The quantities you sent.
+   */
+  quantities?: Record<string, unknown> | null;
+  /**
+   * calculated: every duty is established; without a customs value, a duty that does not need
+   * it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+   * rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the value
+   * for the amounts. needs_information: something is missing to give a figure, and missing says
+   * what to send again, on each line of a declaration. partial: a duty is withheld for now, and
+   * withheld says which; no total is given. unsupported: a regime or a rate the service does
+   * not calculate. not_found: a code the tariff does not have, or that names no product.
+   * not_covered: the date or the chapter is outside the data.
+   */
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
+  /**
+   * How the goods arrive. Sent, or else supposed: land for Canada and Mexico, ocean otherwise.
+   * By sea they pay the HMF.
+   */
+  transport_mode: string | null;
+  /**
+   * What the amounts do not cover, in words.
+   */
+  warnings?: string[] | null;
+  /**
+   * What the total leaves out for now.
+   */
+  withheld?: Withheld[] | null;
 }
 
 /**
- * How recently the official sources were verified.
- */
-export interface Freshness {
-  /**
-   * Hours since then.
-   */
-  age_hours: number | null;
-  /**
-   * The verification schedule and its target, or why a past edition has none.
-   */
-  basis: string;
-  /**
-   * When the official sources were last verified successfully (before any verification, when
-   * the edition was observed); null for a past edition.
-   */
-  checked_at: string | null;
-  /**
-   * True past the freshness target: the sources may have changed since.
-   */
-  stale: boolean;
-}
-
-/**
- * One product at every change of the US tariff over a period: POST /v1/estimates/history.
+ * One product at every change of the US tariff over a period: POST /v2/estimates/history.
  */
 export interface HistoryRequest {
   /**
@@ -1013,15 +1157,15 @@ export interface HistoryRequest {
    */
   customs_value?: number | string | null;
   /**
-   * A formal entry pays the merchandise processing fee (MPF) on its value; an informal one, the
-   * fixed informal fee.
+   * A formal entry pays the merchandise processing fee (MPF) on its value. An informal entry
+   * pays a fixed fee the estimate does not calculate: it gives no fees.
    *
    * Default: "formal".
    */
   entry_type?: "formal" | "informal";
   /**
-   * Answers to the questions of the facts catalogue (GET /v1/facts), by name. A name outside
-   * the catalogue is reported in the result and never used.
+   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
+   * the catalogue is said in warnings and never used.
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -1040,11 +1184,11 @@ export interface HistoryRequest {
    */
   hts: string;
   /**
-   * Count the entry fees (MPF, HMF) of a declaration of this product alone; the landed cost
-   * includes them only then. The MPF is charged once on a declaration: for several products
-   * entered together, use POST /v1/estimates/entry.
+   * Count the entry fees (MPF, HMF) of a declaration of this product alone. Each product is
+   * estimated as its own declaration: the MPF is charged once on a declaration, so for several
+   * products entered together use POST /v2/estimates/entry.
    *
-   * Default: false.
+   * Default: true.
    */
   include_fees?: boolean;
   /**
@@ -1060,13 +1204,13 @@ export interface HistoryRequest {
   origin: string;
   /**
    * A trade agreement's symbol from the HTS special column (S for USMCA, KR for KORUS…; GET
-   * /v1/agreements). Giving it declares that the goods meet its rules of origin and that you
+   * /v2/agreements). Giving it declares that the goods meet its rules of origin and that you
    * hold the proof.
    */
   preference?: string | null;
   /**
    * Quantities in the units a duty counts (kg, l, item, dozen, pair, proof_liter…),
-   * nonnegative. A result names the quantity it needs in required_fields ("quantities.kg").
+   * nonnegative. An answer names the quantity it needs in missing ("quantities.kg").
    */
   quantities?: Record<string, number | string>;
   /**
@@ -1081,21 +1225,17 @@ export interface HistoryRequest {
 }
 
 /**
- * One product at every change of the tariff over a period.
+ * The product at every change of the tariff over the period.
  */
 export interface HistoryResult {
   /**
-   * How the points are calculated, in words.
-   */
-  basis: string;
-  /**
-   * The periods the service holds rules for within the period asked: no point lies outside.
+   * The periods the data covers, by publication.
    */
   covered_windows: CoveredWindow[];
   /**
-   * One result per change of the tariff, in date order, each on its as_of.
+   * The product at each change, in order of date.
    */
-  points: CalculationResult[];
+  points: HistoryPoint[];
 }
 
 /**
@@ -1234,93 +1374,118 @@ export interface HtsSearch {
 }
 
 /**
- * One question for a missing input, to ask before calculating again.
- */
-export interface InputGuidance {
-  /**
-   * The values to choose from, for a choice.
-   */
-  choices?: unknown[] | null;
-  /**
-   * Why it is asked, or how to answer it.
-   */
-  description: string;
-  /**
-   * Where to send the answer, as required_fields names it: facts.<name>, quantities.<unit>,
-   * customs_value, preference, hts or as_of.
-   */
-  field: string;
-  /**
-   * observable or choice (a fact of the goods), declared_conclusion (a conclusion you declare,
-   * as whether a Chapter 99 heading applies) or input (a plain input).
-   */
-  kind?: string | null;
-  /**
-   * The question in a few words.
-   */
-  label: string;
-  /**
-   * The text the question comes from.
-   */
-  legal_basis?: string | null;
-  /**
-   * The question to ask.
-   */
-  question?: string | null;
-  /**
-   * product: the line's own; entry or shipment: the whole declaration's.
-   */
-  scope?: string | null;
-  /**
-   * How it is answered: boolean, choice, money, number, country, heading, text or datetime.
-   */
-  type: string;
-  /**
-   * The unit of a number, if any.
-   */
-  unit?: string | null;
-}
-
-/**
- * The last result established without the items now withheld: historical, in no total.
+ * The last result established without what is withheld now: dated, kept apart, in no total.
  */
 export interface LastApproved {
   /**
-   * When that publication was approved.
+   * When that publication went into service.
    */
-  approved_from?: string | null;
+  approved_from: string | null;
   /**
-   * Until when it was approved; null while it still is.
+   * When it left service; null while it serves.
    */
-  approved_to?: string | null;
+  approved_to: string | null;
   /**
-   * Legal date of this result; the edition's last day for an older edition.
+   * The day it was calculated for.
    */
-  as_of: string;
+  as_of: string | null;
   /**
    * The edition of the US tariff, in words.
    */
-  edition: string;
+  edition: string | null;
   /**
-   * The duty of that result.
+   * Its duty then, in US dollars.
    */
   estimated_duty: string | null;
   /**
-   * The landed cost of that result.
+   * Its landed cost then, in US dollars.
    */
-  estimated_landed_cost?: string | null;
+  estimated_landed_cost: string | null;
   /**
-   * The established subtotal of that result.
+   * The publication of the rules it was calculated with: send it as publication_id to calculate
+   * again with the same rules.
    */
-  known_duty_subtotal: string | null;
+  publication_id: string | null;
   /**
-   * The publication it was calculated with.
+   * Its status then.
    */
-  publication_id: string;
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
+}
+
+/**
+ * One line of a declaration: its fees are the declaration's.
+ */
+export interface Line {
   /**
-   * The status of that result.
+   * The longer codes under a short one: send one of them as hts.
    */
-  status: string;
+  candidates?: Candidate[] | null;
+  /**
+   * The customs value you sent, in US dollars; null without one.
+   */
+  customs_value: string | null;
+  /**
+   * What the code covers, in the words of the tariff.
+   */
+  description: string | null;
+  /**
+   * Each duty, with its rate, amount and source.
+   */
+  duties?: Duty[] | null;
+  /**
+   * All the duties, in US dollars. Null is unknown, never zero.
+   */
+  estimated_duty?: string | null;
+  /**
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
+   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   */
+  estimated_duty_rate?: string | null;
+  /**
+   * The answers this estimate rests on, those you sent and those supposed: the ordinary case of
+   * each question a rule asks of these goods. Send any of them in facts to change the estimate;
+   * GET /v2/facts gives each one's question and answers.
+   */
+  facts?: Record<string, unknown> | null;
+  /**
+   * The HTS code, in digits.
+   */
+  hts: string;
+  /**
+   * What to send again for a figure, with status needs_information.
+   */
+  missing?: MissingField[] | null;
+  /**
+   * The country of origin.
+   */
+  origin: string;
+  /**
+   * The quantities you sent.
+   */
+  quantities?: Record<string, unknown> | null;
+  /**
+   * Your reference for it, when you sent one.
+   */
+  reference?: string | null;
+  /**
+   * calculated: every duty is established; without a customs value, a duty that does not need
+   * it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+   * rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the value
+   * for the amounts. needs_information: something is missing to give a figure, and missing says
+   * what to send again, on each line of a declaration. partial: a duty is withheld for now, and
+   * withheld says which; no total is given. unsupported: a regime or a rate the service does
+   * not calculate. not_found: a code the tariff does not have, or that names no product.
+   * not_covered: the date or the chapter is outside the data.
+   */
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
+  /**
+   * What the amounts do not cover, in words.
+   */
+  warnings?: string[] | null;
+  /**
+   * What the total leaves out for now.
+   */
+  withheld?: Withheld[] | null;
 }
 
 /**
@@ -1333,8 +1498,8 @@ export interface LineInput {
    */
   customs_value?: number | string | null;
   /**
-   * Answers to the questions of the facts catalogue (GET /v1/facts), by name. A name outside
-   * the catalogue is reported in the result and never used.
+   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
+   * the catalogue is said in warnings and never used.
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -1349,13 +1514,13 @@ export interface LineInput {
   origin: string;
   /**
    * A trade agreement's symbol from the HTS special column (S for USMCA, KR for KORUS…; GET
-   * /v1/agreements). Giving it declares that the goods meet its rules of origin and that you
+   * /v2/agreements). Giving it declares that the goods meet its rules of origin and that you
    * hold the proof.
    */
   preference?: string | null;
   /**
    * Quantities in the units a duty counts (kg, l, item, dozen, pair, proof_liter…),
-   * nonnegative. A result names the quantity it needs in required_fields ("quantities.kg").
+   * nonnegative. An answer names the quantity it needs in missing ("quantities.kg").
    */
   quantities?: Record<string, number | string>;
   /**
@@ -1365,314 +1530,37 @@ export interface LineInput {
 }
 
 /**
- * One line of a declaration: its duties. The fees and the landed cost are those of the
- * declaration, calculated once for all its lines.
+ * What the service needs to give a figure.
  */
-export interface LineResult {
+export interface MissingField {
   /**
-   * Measures whose relations do not settle (two caps on the same duties, contradictory
-   * relations): the duties concerned stay unresolved, and estimated_duty is null.
+   * The values a choice takes.
    */
-  alerts?: string[];
+  choices?: unknown[] | null;
   /**
-   * The facts the request answered, each with the measures it decides (those whose decision
-   * another answer would change); none when, given the other answers, it decides nothing.
+   * Where to send it in the request.
    */
-  answers?: Record<string, unknown>[];
+  field: string;
   /**
-   * The legal day the duties are calculated for, in New York time.
+   * What it asks, in words.
    */
-  as_of: string;
+  question: string;
   /**
-   * Instant of effect (New York time) when a transition on that day depends on the hour.
+   * The type of its value: number, money, boolean, choice, text, heading, country or datetime.
    */
-  as_of_instant?: string | null;
+  type: string;
   /**
-   * The answers this estimate assumed because none was declared (the ordinary case): for each,
-   * the fact, the value assumed, its question, its type and choices, and under alternatives
-   * what each other answer would give. Send your own answer in facts to replace one.
-   */
-  assumptions?: Record<string, unknown>[];
-  /**
-   * The base rate as the tariff prints it, in the column read: general, special (an agreement
-   * claimed and granted) or column 2.
-   */
-  base_rate: string | null;
-  /**
-   * With a shorter code: the 8- and 10-digit lines under it, up to 25.
-   */
-  candidates?: Candidate[] | null;
-  /**
-   * The line's three rate columns as printed: general, special and other (column 2).
-   */
-  column_rates?: Record<string, string> | null;
-  /**
-   * The duties counted, the base duty first, each with its amount and its source.
-   */
-  components: Component[];
-  /**
-   * Always USD: every amount is in US dollars.
-   */
-  currency: "USD";
-  /**
-   * The line's descriptions, from the heading down.
-   */
-  description?: string | null;
-  /**
-   * The duty as a share of the customs value, for comparison.
-   */
-  duty_rate?: DutyRate | null;
-  /**
-   * The version of the engine that calculated it.
-   */
-  engine_version: string;
-  /**
-   * What the estimate covers, in words: implemented measures only, unknown never zero.
-   */
-  estimate_scope: string;
-  /**
-   * Implemented measures only. Null means unknown, never zero: information is missing, a
-   * position is in review or an incident suspends it.
-   */
-  estimated_duty: string | null;
-  /**
-   * Decision, reason and source of every measure examined for this case.
-   */
-  examined_measures?: ExaminedMeasure[];
-  /**
-   * The tariff's footnotes for the line, which may impose conditions.
-   */
-  footnotes?: unknown[] | null;
-  /**
-   * The HTS code calculated, in digits.
-   */
-  hts: string;
-  /**
-   * One question per missing input, to ask before calculating again.
-   */
-  input_guidance?: InputGuidance[] | null;
-  /**
-   * When the publication was prepared: the state of knowledge the result rests on.
-   */
-  knowledge_at: string | null;
-  /**
-   * Sum of the components whose validity is established; null when none is.
-   */
-  known_duty_subtotal: string | null;
-  /**
-   * How the code was found in the tariff.
-   */
-  match: Match;
-  /**
-   * The country of origin, as sent.
-   */
-  origin: string;
-  /**
-   * The checksum of that publication's files.
-   */
-  publication_checksum: string | null;
-  /**
-   * The publication of the rules it was calculated with: send it as publication_id to calculate
-   * again with the same rules.
-   */
-  publication_id: string;
-  /**
-   * The edition of the US tariff, in words.
-   */
-  publication_label: string;
-  /**
-   * Your reference for the line, as sent.
-   */
-  reference?: string | null;
-  /**
-   * When a measure replaces the base duty: the base duty replaced, with the reason; in no
-   * total.
-   */
-  replaced_base?: Record<string, unknown> | null;
-  /**
-   * The inputs still missing, each asked in input_guidance.
-   */
-  required_fields: string[];
-  /**
-   * Shown apart, subject to a position in review; in no total.
-   */
-  reserved_components?: Component[];
-  /**
-   * What withholds part of the estimate: a position in review (position), a wrong-rate incident
-   * (incident), an official notice not yet read (notice), a measure in force whose rate is not
-   * announced yet (pending_rate).
-   */
-  review_pending?: ReviewPending[];
-  /**
-   * Every official document the result rests on.
-   */
-  sources: Source[];
-  /**
-   * The statistical units the tariff prints for the line (No., kg).
-   */
-  statistical_units?: string[] | null;
-  /**
-   * What the answer is, to read before its amounts. calculated: every component is established.
-   * needs_information: what you can give is missing (a fact, a quantity, the value, a more
-   * precise code or the instant of effect), asked in input_guidance. partial: a component stays
-   * unknown that you cannot give (a position in review, an incident, incomplete coverage),
-   * listed in review_pending. unsupported: a rate, a formula or an entry regime the engine does
-   * not calculate. not_covered: a date or a chapter outside the data, or a code of chapters 98
-   * and 99, which needs the product's own code. not_found: no such code in the tariff, nor any
-   * more precise one.
-   */
-  status: "calculated" | "partial" | "needs_information" | "unsupported" | "not_found" | "not_covered";
-  /**
-   * Cautions in words, to show with the result: a preference declared, footnotes, fees not
-   * established, sources not verified recently.
-   */
-  warnings: string[];
-}
-
-/**
- * How the code sent was found in the tariff.
- */
-export interface Match {
-  /**
-   * The number of digits of the code sent.
-   */
-  level: number;
-  /**
-   * The line found.
-   */
-  matched_hts?: string | null;
-  /**
-   * direct: the line's own rates. parent: a 10-digit line without rates of its own takes those
-   * of its 8-digit line.
-   */
-  rate_basis: "direct" | "parent" | null;
-  /**
-   * The line whose rates are read.
-   */
-  rate_hts?: string | null;
-  /**
-   * exact: a line of the tariff. prefix_candidates: a shorter code, the lines under it in
-   * candidates. none: not found, or not calculated (a date or chapter not covered).
-   */
-  type: "none" | "exact" | "prefix_candidates";
-}
-
-/**
- * One term of a rate; the terms of a rate are added together.
- */
-export interface RateTerm {
-  /**
-   * Dollars per unit, for a specific term.
-   */
-  amount?: string | null;
-  /**
-   * For a top_up, the duty it completes: applicable (the line's base duty) or mfn (the column 1
-   * general duty).
-   */
-  basis?: string | null;
-  /**
-   * The fact that gives the value the term applies to: the part's value (content), or the value
-   * a top_up covers.
-   */
-  field?: string | null;
-  /**
-   * The form of the term. ad_valorem: a share of the value. specific: an amount per unit.
-   * content: a share of the value of a part (a watch's movement). top_up: what brings the duty
-   * up to a share of the value. sugar: the polarization formula. named: a calculator of the
-   * engine. pending: announced without its rate.
-   */
-  kind: "ad_valorem" | "content" | "named" | "pending" | "specific" | "sugar" | "top_up";
-  /**
-   * A decimal fraction (0.165 for 16.5%): of the value (ad_valorem), of the part's value
-   * (content), the share a top_up brings the duty to, or the sugar formula's rate per kilogram.
-   */
-  rate?: string | null;
-  /**
-   * The unit a specific term counts, as in quantities (kg, l, item…).
+   * The unit of a quantity.
    */
   unit?: string | null;
 }
 
 /**
- * What withholds part of an estimate.
- */
-export interface ReviewPending {
-  /**
-   * When it was detected.
-   */
-  detected_at?: string | null;
-  /**
-   * What it may do to the estimate: additional (a duty on top of the others), may_modify
-   * (change the duties it names, which are withheld), none, or unknown (change any duty: all
-   * are withheld).
-   */
-  effect: string;
-  /**
-   * position: a Chapter 99 position in review. incident: an open wrong-rate incident. notice:
-   * an official notice not yet read. pending_rate: a measure in force whose rate is not
-   * announced yet.
-   */
-  kind: "position" | "incident" | "notice" | "pending_rate";
-  /**
-   * The Chapter 99 heading concerned, if any.
-   */
-  position?: string | null;
-  /**
-   * Why the estimate is withheld, in words.
-   */
-  reason: string;
-  /**
-   * The incident's or the notice's reference.
-   */
-  reference?: string | null;
-}
-
-/**
- * Calculate and save one product (estimate) or a declaration (entry): exactly one.
- */
-export interface SaveRequest {
-  /**
-   * A declaration to calculate and save, instead of estimate.
-   */
-  entry?: EntryInput | null;
-  /**
-   * One product to calculate and save. Give estimate or entry, not both.
-   */
-  estimate?: EstimateInput | null;
-  /**
-   * A name for the saved estimate.
-   */
-  label?: string;
-}
-
-/**
- * An estimate just calculated and saved.
- */
-export interface Saved {
-  /**
-   * For a declaration: the declaration it is saved as in the portal.
-   */
-  entry_id?: string | null;
-  /**
-   * The saved estimate's identifier.
-   */
-  id: string;
-  /**
-   * single: one product. entry: a declaration.
-   */
-  kind: "single" | "entry";
-  /**
-   * Its result, as POST /v1/estimates or POST /v1/estimates/entry gives it.
-   */
-  result: CalculationResult | EntryResult;
-}
-
-/**
- * A saved estimate with its request and its result, as they were.
+ * A saved estimate, with the detail behind its answer.
  */
 export interface SavedDetail {
   /**
-   * Who saved it: the API key, by its name, or the person.
+   * Who saved it.
    */
   author: string;
   /**
@@ -1680,28 +1568,19 @@ export interface SavedDetail {
    */
   created_at: string;
   /**
-   * The version of the engine that calculated it.
-   */
-  engine_version: string;
-  /**
-   * The duty of its result, as it was calculated.
+   * All the duties, in US dollars.
    */
   estimated_duty: string | null;
   /**
-   * Its identifier: read it with GET /v1/saved-estimates/{id}.
+   * Its identifier.
    */
   id: string;
   /**
-   * The image of the engine that replays it exactly.
-   */
-  image_digest: string | null;
-  /**
-   * The incidents found since it was saved that concern it, the oldest first; empty when there
-   * are none.
+   * The incidents found since that concern it.
    */
   incidents: SavedIncident[];
   /**
-   * The request, in the fields of the API: an EstimateInput (single) or an EntryInput (entry).
+   * The request as calculated: its date, publication and answers.
    */
   inputs: Record<string, unknown>;
   /**
@@ -1709,27 +1588,33 @@ export interface SavedDetail {
    */
   kind: "single" | "entry";
   /**
-   * Its name, as given when saved.
+   * The name it was given.
    */
   label: string;
   /**
-   * The publication it was calculated with.
+   * The publication of the rules it was calculated with: send it as publication_id to calculate
+   * again with the same rules.
    */
   publication_id: string | null;
   /**
-   * The result as its engine_version calculated it, never recalculated: a CalculationResult
-   * (single) or an EntryResult (entry) of that version.
+   * Its answer and its detail.
    */
-  result: Record<string, unknown>;
+  result: AuditedEstimate | AuditedDeclaration;
   /**
-   * Where it was saved: api, mcp, portal, import (a declaration imported in the portal) or
-   * report (the case of an error report).
+   * Where it was saved: api, mcp, portal or import.
    */
   source: string;
   /**
-   * The status of its result, as it was calculated: incidents says what was found since.
+   * calculated: every duty is established; without a customs value, a duty that does not need
+   * it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+   * rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the value
+   * for the amounts. needs_information: something is missing to give a figure, and missing says
+   * what to send again, on each line of a declaration. partial: a duty is withheld for now, and
+   * withheld says which; no total is given. unsupported: a regime or a rate the service does
+   * not calculate. not_found: a code the tariff does not have, or that names no product.
+   * not_covered: the date or the chapter is outside the data.
    */
-  status: string | null;
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
 }
 
 /**
@@ -1761,33 +1646,33 @@ export interface SavedIncident {
 }
 
 /**
- * A page of the workspace's saved estimates.
+ * A page of saved estimates, the newest first.
  */
 export interface SavedList {
   /**
-   * How many saved estimates the workspace has.
+   * How many there are in all.
    */
   count: number;
   /**
-   * How many a page holds, as asked.
+   * How many were asked.
    */
   limit: number;
   /**
-   * How many were skipped, as asked.
+   * How many were skipped.
    */
   offset: number;
   /**
-   * This page, the latest first.
+   * This page.
    */
   results: SavedSummary[];
 }
 
 /**
- * A saved estimate, as the list gives it.
+ * A saved estimate in a list.
  */
 export interface SavedSummary {
   /**
-   * Who saved it: the API key, by its name, or the person.
+   * Who saved it.
    */
   author: string;
   /**
@@ -1795,24 +1680,15 @@ export interface SavedSummary {
    */
   created_at: string;
   /**
-   * The version of the engine that calculated it.
-   */
-  engine_version: string;
-  /**
-   * The duty of its result, as it was calculated.
+   * All the duties, in US dollars.
    */
   estimated_duty: string | null;
   /**
-   * Its identifier: read it with GET /v1/saved-estimates/{id}.
+   * Its identifier.
    */
   id: string;
   /**
-   * The image of the engine that replays it exactly.
-   */
-  image_digest: string | null;
-  /**
-   * The incidents found since it was saved that concern it, the oldest first; empty when there
-   * are none.
+   * The incidents found since that concern it.
    */
   incidents: SavedIncident[];
   /**
@@ -1820,172 +1696,128 @@ export interface SavedSummary {
    */
   kind: "single" | "entry";
   /**
-   * Its name, as given when saved.
+   * The name it was given.
    */
   label: string;
   /**
-   * The publication it was calculated with.
+   * The publication of the rules it was calculated with: send it as publication_id to calculate
+   * again with the same rules.
    */
   publication_id: string | null;
   /**
-   * Where it was saved: api, mcp, portal, import (a declaration imported in the portal) or
-   * report (the case of an error report).
+   * Where it was saved: api, mcp, portal or import.
    */
   source: string;
   /**
-   * The status of its result, as it was calculated: incidents says what was found since.
+   * calculated: every duty is established; without a customs value, a duty that does not need
+   * it comes with estimated_fees and estimated_landed_cost null, and a warning says so.
+   * rate_only: no customs value was sent, and estimated_duty_rate is the answer; send the value
+   * for the amounts. needs_information: something is missing to give a figure, and missing says
+   * what to send again, on each line of a declaration. partial: a duty is withheld for now, and
+   * withheld says which; no total is given. unsupported: a regime or a rate the service does
+   * not calculate. not_found: a code the tariff does not have, or that names no product.
+   * not_covered: the date or the chapter is outside the data.
    */
-  status: string | null;
+  status: "calculated" | "rate_only" | "needs_information" | "partial" | "unsupported" | "not_found" | "not_covered";
 }
 
 /**
- * One combination of answers to the questions left open, and what it gives.
- */
-export interface Scenario {
-  /**
-   * One answer to each question: its fact, its line (from 0; null for a question of the whole
-   * declaration) and its value.
-   */
-  answers: Record<string, unknown>[];
-  /**
-   * The duty with these answers.
-   */
-  estimated_duty: string | null;
-  /**
-   * Duty and fees with these answers; null when one is unknown.
-   */
-  estimated_total: string | null;
-  /**
-   * The fees with these answers; null when not asked or unknown.
-   */
-  total_fees: string | null;
-}
-
-/**
- * What the estimate would be under each answer to the questions that have no ordinary case.
- */
-export interface Scenarios {
-  /**
-   * minimum and maximum of estimated_total, with their label; null when a combination has no
-   * total.
-   */
-  bounds: Record<string, string> | null;
-  /**
-   * The questions the scenarios answer.
-   */
-  facts: string[];
-  /**
-   * exact: every combination calculated. prudent: more than twelve, bounds only.
-   */
-  kind: "exact" | "prudent";
-  /**
-   * Each combination; empty for a prudent range.
-   */
-  scenarios: Scenario[];
-}
-
-/**
- * An official document a rate, a measure or a fee is read from.
+ * The official document an amount rests on.
  */
 export interface Source {
   /**
-   * True when the duty rests on an official notice (a proclamation, a USTR notice, a customs
-   * message) that the USITC tariff does not hold yet.
+   * The SHA-256 of the file, to check it is the one cited.
    */
-  ahead_of_tariff?: boolean | null;
+  sha256: string | null;
   /**
-   * Who publishes it: USITC, CBP, USTR, the Federal Register…
+   * Its title.
    */
-  authority: string;
+  title: string | null;
   /**
-   * The same SHA-256 as sha256, under the name some sources give it.
+   * Where to read it: the file of that edition.
    */
-  checksum?: string | null;
-  /**
-   * SHA-256 of the document as archived: the very copy the rate was read from.
-   */
-  sha256?: string | null;
-  /**
-   * Its title, or the edition of the tariff. A measure whose text has not changed since keeps
-   * citing an earlier edition than the publication's.
-   */
-  title?: string | null;
-  /**
-   * Where the official document is published: an edition of the tariff at its own file, which
-   * keeps serving the bytes of sha256. A publication prepared before 2026-11-03 gives the
-   * address of the current edition instead, whose bytes differ once a later edition is out.
-   */
-  url?: string | null;
+  url: string | null;
 }
 
 /**
- * Freshness and verification of the data, and its coverage; the same as the pages /status/ and
- * /coverage/.
+ * Whether the data can be relied on now, and which data answers. The pages /status/ and
+ * /coverage/ say more.
  */
 export interface Status {
   /**
-   * Chapter 99 positions and their status, the share of estimates withheld, historical periods,
-   * base rates, agreements, fees and what is out of scope.
+   * When the official sources were last checked.
    */
-  coverage: Record<string, unknown>;
+  checked_at: string | null;
+  /**
+   * The first day an estimate can be dated.
+   */
+  covered_from: string | null;
+  /**
+   * The edition of the US tariff, in words.
+   */
+  edition: string | null;
   /**
    * The engine that calculates every estimate now.
    */
   engine_version: string;
   /**
-   * Past this age, the sources are stale.
+   * The wrong rates being corrected.
    */
-  freshness_target_hours: number;
+  incidents: StatusIncident[];
   /**
-   * True while no new publication may be put in service.
+   * The publication of the rules in service. When it changes, or the engine does, an estimate
+   * you kept may give another result.
    */
-  frozen: boolean;
+  publication_id: string | null;
   /**
-   * Wrong-rate incidents open, notified or corrected: reference, status, notice and opened_at.
+   * True when those checks are older than they should be.
    */
-  incidents: Record<string, unknown>[];
+  stale: boolean;
   /**
-   * Positions still in review after the public notice delay: position, since, reason and
-   * detected_at.
+   * ok: the official sources were verified lately. degraded: they could not be: estimates still
+   * answer, from the data last verified.
    */
-  notices: Record<string, unknown>[];
-  /**
-   * The publications in service, by edition: edition, valid_from, valid_to, publication_id and
-   * approved_from.
-   */
-  publications: Record<string, unknown>[];
-  /**
-   * Until when the fee schedules run (fee_rules_until), and in how many days (days_remaining).
-   */
-  rule_horizon: Record<string, unknown>;
-  /**
-   * Whether the scheduled verification of the sources works: status, last_success, last_failure
-   * and consecutive_failures, as in a result.
-   */
-  verification: Record<string, unknown>;
+  status: "ok" | "degraded";
 }
 
 /**
- * Whether the scheduled verification of the official sources works.
+ * A wrong rate being corrected.
  */
-export interface Verification {
+export interface StatusIncident {
   /**
-   * How many verifications failed in a row, the latest included.
+   * What is being corrected, in words.
    */
-  consecutive_failures: number;
+  notice: string;
   /**
-   * When it last failed.
+   * When it was opened.
    */
-  last_failure: string | null;
+  opened_at: string;
   /**
-   * When it last worked.
+   * The incident, as the emails and the status page name it.
    */
-  last_success: string | null;
+  reference: string;
   /**
-   * healthy: the last verification worked. failing: the last ones failed. unknown: none has
-   * run.
+   * Where it stands: open, notified or corrected.
    */
-  status: "healthy" | "failing" | "unknown";
+  status: string;
+}
+
+/**
+ * What the total leaves out for now.
+ */
+export interface Withheld {
+  /**
+   * Its Chapter 99 heading, if any.
+   */
+  heading: string | null;
+  /**
+   * What is withheld, in words.
+   */
+  name: string;
+  /**
+   * Why, and what it means for the total.
+   */
+  reason: string;
 }
 
 /**

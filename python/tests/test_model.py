@@ -12,22 +12,17 @@ CONTRACT = json.loads((Path(__file__).resolve().parents[2] / "openapi.json").rea
 
 
 def test_nested_objects_are_objects():
-    result = types.CalculationResult(
+    result = types.Estimate(
         {
             "status": "calculated",
-            "components": [{"id": "base", "amount": "1.00", "source": {"authority": "USITC"}}],
-            "freshness": {"stale": False},
+            "duties": [{"name": "Base duty", "amount": "1.00", "source": {"title": "HTS"}}],
+            "data": {"stale": False},
         }
     )
-    assert result.components[0].amount == "1.00"
-    assert isinstance(result.components[0], types.Component)
-    assert result.components[0].source.authority == "USITC"
-    assert result.freshness.stale is False
-
-
-def test_a_map_of_objects_is_a_map_of_objects():
-    batch = types.BatchResult({"freshness": {"pub": {"stale": True}}})
-    assert batch.freshness["pub"].stale is True
+    assert result.duties[0].amount == "1.00"
+    assert isinstance(result.duties[0], types.Duty)
+    assert result.duties[0].source.title == "HTS"
+    assert result.data.stale is False
 
 
 def test_a_union_is_the_object_whose_required_fields_are_there():
@@ -45,35 +40,33 @@ def test_a_union_is_the_object_whose_required_fields_are_there():
 
 
 def test_a_saved_estimate_is_a_product_or_a_declaration():
-    product = {name: None for name in types.CalculationResult._required}
-    entry = {name: None for name in types.EntryResult._required}
-    assert isinstance(types.Saved({"result": product}).result, types.CalculationResult)
-    assert isinstance(types.Saved({"result": entry}).result, types.EntryResult)
+    product = {name: None for name in types.AuditedEstimate._required}
+    entry = {name: None for name in types.AuditedDeclaration._required}
+    assert isinstance(types.SavedDetail({"result": product}).result, types.AuditedEstimate)
+    assert isinstance(types.SavedDetail({"result": entry}).result, types.AuditedDeclaration)
 
 
 def test_a_field_left_out_reads_as_its_default_or_none():
-    result = types.CalculationResult({"status": "calculated"})
-    assert result.review_pending == [] and result.assumptions == []
-    assert result.verification is None and result.duty_rate is None
-    result.review_pending.append("mine")
-    assert types.CalculationResult({}).review_pending == []
+    result = types.Estimate({"status": "calculated"})
+    assert result.warnings is None and result.duties is None and result.saved_estimate_id is None
 
 
 def test_null_stays_null():
-    result = types.CalculationResult(
-        {"estimated_duty": None, "duty_rate": None, "candidates": None}
+    result = types.Estimate(
+        {"estimated_duty": None, "estimated_duty_rate": None, "candidates": None}
     )
-    assert result.estimated_duty is None and result.duty_rate is None and result.candidates is None
+    assert result.estimated_duty is None
+    assert result.estimated_duty_rate is None and result.candidates is None
 
 
 def test_a_field_newer_than_the_package_reads_too():
-    result = types.CalculationResult({"new_field": 1})
+    result = types.Estimate({"new_field": 1})
     assert result.new_field == 1 and "new_field" in dir(result)
 
 
 def test_a_mistyped_field_is_an_error():
     with pytest.raises(AttributeError, match="no field 'estimated_dutty'"):
-        _ = types.CalculationResult({}).estimated_dutty
+        _ = types.Estimate({}).estimated_dutty
 
 
 def test_a_reserved_word_reads_with_an_underscore():
@@ -81,30 +74,30 @@ def test_a_reserved_word_reads_with_an_underscore():
 
 
 def test_to_dict_is_what_the_api_sent():
-    data = {"status": "calculated", "components": [{"id": "base"}]}
-    result = types.CalculationResult(data)
-    assert result.components[0].id == "base"
+    data = {"status": "calculated", "duties": [{"name": "Base duty"}]}
+    result = types.Estimate(data)
+    assert result.duties[0].name == "Base duty"
     assert result.to_dict() == data
     assert json.loads(json.dumps(result.to_dict())) == data
 
 
 def test_comparison_and_repr():
-    one = types.Source({"authority": "USITC", "title": "HTS", "nested": {"a": 1}})
-    assert one == types.Source(one.to_dict()) and one != types.Fee(one.to_dict())
-    assert repr(one) == "Source(authority='USITC', title='HTS')"
+    one = types.Source({"sha256": "abc", "title": "HTS", "nested": {"a": 1}})
+    assert one == types.Source(one.to_dict()) and one != types.Duty(one.to_dict())
+    assert repr(one) == "Source(sha256='abc', title='HTS')"
 
 
 def test_an_object_can_be_copied():
     import copy
     import pickle
 
-    one = types.Source({"authority": "USITC"})
+    one = types.Source({"title": "HTS"})
     assert copy.deepcopy(one) == one and pickle.loads(pickle.dumps(one)) == one
 
 
 def test_every_object_of_the_contract_is_declared():
-    inputs = {"BatchItem", "BatchRequest", "EntryInput", "EstimateInput", "HistoryRequest"}
-    inputs |= {"LineInput", "SaveRequest"}
+    inputs = {"BatchItem", "BatchRequest", "EntryRequest", "EstimateRequest", "HistoryRequest"}
+    inputs |= {"LineInput"}
     for name, schema in CONTRACT["components"]["schemas"].items():
         if name in inputs:
             continue

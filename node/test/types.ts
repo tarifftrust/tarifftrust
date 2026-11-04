@@ -1,19 +1,19 @@
 // Compiled, never run: what a TypeScript user writes type-checks, and what is wrong does not.
 import { TariffTrust } from "../dist/esm/index.js";
-import type { BatchFailure, BatchSuccess, CalculationResult, EntryResult } from "../dist/esm/index.js";
+import type { BatchFailure, BatchSuccess, Declaration, Estimate } from "../dist/esm/index.js";
 
 const client = new TariffTrust({ apiKey: "k" });
 
 export async function usage(): Promise<void> {
-  const result: CalculationResult = await client.estimate({
+  const result: Estimate = await client.estimate({
     hts: "6109.10.00.12",
     origin: "CN",
     customs_value: "10000",
     transport_mode: "ocean",
     facts: { weight: 1.5 },
   });
-  const duty: string | null = result.estimated_duty;
-  const amount: string | null | undefined = result.components[0]?.amount;
+  const duty: string | null | undefined = result.estimated_duty;
+  const amount: string | null | undefined = result.duties?.[0]?.amount;
   console.log(duty, amount, result.status === "calculated");
 
   const batch = await client.estimateBatch({ items: [{ hts: "1", origin: "CN" }] });
@@ -22,15 +22,15 @@ export async function usage(): Promise<void> {
     else console.log((item satisfies BatchFailure).error.code);
   }
 
-  const entry: EntryResult = await client.estimateEntry(
+  const entry: Declaration = await client.estimateEntry(
     { lines: [{ hts: "1", origin: "CN", reference: "PO-1" }], transport_mode: "air" },
     { idempotencyKey: "po-1", timeoutMs: 1000 },
   );
   console.log(entry.lines[0]?.status);
 
   await client.estimateHistory({ hts: "1", origin: "CN", from: "2025-01-01" });
-  await client.saveEstimate({ estimate: { hts: "1", origin: "CN" }, label: "x" });
-  await client.saveEstimate({ entry: { lines: [] } });
+  await client.estimate({ hts: "1", origin: "CN", save: true, label: "x" });
+  await client.estimateEntry({ lines: [], save: true });
   (await client.searchHts({ q: "cotton", limit: 5 })).results[0]?.code;
   (await client.searchHts()).count;
   (await client.getHts("6109.10.00.12")).general;
