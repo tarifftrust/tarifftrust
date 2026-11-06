@@ -76,6 +76,50 @@
         "title": "AgreementList",
         "type": "object"
       },
+      "AskedBy": {
+        "additionalProperties": false,
+        "description": "An official text that asks a question: read it to answer precisely.",
+        "properties": {
+          "heading": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The Chapter 99 heading, or the tariff line, whose text asks it; null for a regulation.",
+            "examples": [
+              "9903.94.07"
+            ],
+            "title": "Heading"
+          },
+          "title": {
+            "description": "What it is, in words.",
+            "examples": [
+              "Section 232 \u2014 certified automobile parts, 25 percent \u2014 9903.94.07"
+            ],
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "description": "Where to read it: the heading's page, with its text and the note it cites, or the official document of a notice read ahead of the tariff.",
+            "examples": [
+              "https://tarifftrust.com/hts/9903.94.07/"
+            ],
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "heading",
+          "title",
+          "url"
+        ],
+        "title": "AskedBy",
+        "type": "object"
+      },
       "AuditedDeclaration": {
         "additionalProperties": false,
         "description": "A saved declaration's answer, with the detail behind it.",
@@ -923,7 +967,7 @@
                 }
               ]
             },
-            "description": "Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside the catalogue is said in warnings and never used.",
+            "description": "Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is no question is refused, so that a typing error never gives a figure on the ordinary case.",
             "examples": [
               {
                 "section301_exclusion_claimed": false
@@ -2321,7 +2365,7 @@
                 }
               ]
             },
-            "description": "Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside the catalogue is said in warnings and never used.",
+            "description": "Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is no question is refused, so that a typing error never gives a figure on the ordinary case.",
             "examples": [
               {
                 "section301_exclusion_claimed": false
@@ -2534,6 +2578,15 @@
         "additionalProperties": true,
         "description": "A question an estimate may ask about the goods or the declaration.",
         "properties": {
+          "asked_by": {
+            "default": [],
+            "description": "The official texts that ask it today: the headings whose rules in service read it, or the regulation of a fee. Empty for what depends on each product's own line (its rate, its entry); an estimate names, in missing, those that ask it for its goods.",
+            "items": {
+              "$ref": "#/components/schemas/AskedBy"
+            },
+            "title": "Asked By",
+            "type": "array"
+          },
           "choices": {
             "default": [],
             "description": "For a choice: the values to choose from.",
@@ -2568,7 +2621,7 @@
             "type": "string"
           },
           "type": {
-            "description": "How it is answered: boolean (true or false), choice (one of choices), money (US dollars), number, country (ISO code) or heading (a Chapter 99 heading).",
+            "description": "How it is answered: boolean (true or false), choice (one of choices), money (US dollars), number or country (ISO code).",
             "title": "Type",
             "type": "string"
           },
@@ -2591,10 +2644,10 @@
       },
       "FactList": {
         "additionalProperties": true,
-        "description": "The facts catalogue: every question an estimate may ask.",
+        "description": "The questions an estimate may ask.",
         "properties": {
           "facts": {
-            "description": "Every question of the catalogue.",
+            "description": "The questions that can change an answer today.",
             "items": {
               "$ref": "#/components/schemas/FactDefinition"
             },
@@ -2990,7 +3043,7 @@
                 }
               ]
             },
-            "description": "Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside the catalogue is said in warnings and never used.",
+            "description": "Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is no question is refused, so that a typing error never gives a figure on the ordinary case.",
             "examples": [
               {
                 "section301_exclusion_claimed": false
@@ -3793,7 +3846,7 @@
                 }
               ]
             },
-            "description": "Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside the catalogue is said in warnings and never used.",
+            "description": "Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is no question is refused, so that a typing error never gives a figure on the ordinary case.",
             "examples": [
               {
                 "section301_exclusion_claimed": false
@@ -3906,6 +3959,21 @@
         "additionalProperties": false,
         "description": "What the service needs to give a figure.",
         "properties": {
+          "asked_by": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AskedBy"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The official texts that ask it for these goods, to answer it precisely.",
+            "title": "Asked By"
+          },
           "choices": {
             "anyOf": [
               {
@@ -3936,7 +4004,7 @@
             "type": "string"
           },
           "type": {
-            "description": "The type of its value: number, money, boolean, choice, text, heading, country or datetime.",
+            "description": "The type of its value: number, money, boolean, choice, text, country or datetime.",
             "title": "Type",
             "type": "string"
           },
@@ -4514,7 +4582,7 @@
   "info": {
     "description": "Sourced estimates of US import duties and fees: every amount cites its official\nsource. Informational use only, not a customs determination.\n\nSend an API key of your workspace in `Authorization: Bearer <key>`. Amounts are strings in US\ndollars; `null` is unknown, never zero.\n\n[Reference](https://tarifftrust.com/api/reference/) \u00b7 [Guides](https://tarifftrust.com/guides/) \u00b7\n[Errors and limits](https://tarifftrust.com/api/reference/#errors) \u00b7 [llms.txt](https://tarifftrust.com/llms.txt)\n",
     "title": "TariffTrust API",
-    "version": "2.0.0"
+    "version": "2.1.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -5632,7 +5700,7 @@
     },
     "/v2/facts": {
       "get": {
-        "description": "The facts catalogue: each question a measure may depend on, by the name to answer it with in\nfacts, its type, its choices and its ordinary case. An answer names the ones it needs in\nmissing, and those it rests on in facts. Needs the read permission; not counted.",
+        "description": "The questions that can change an answer today: each by the name to answer it with in facts, its\ntype, its choices and its ordinary case. An answer names the ones it needs in missing, and those it\nrests on in facts. The example shows two of them; the answer lists them all. Needs the read\npermission; not counted.",
         "operationId": "list_facts",
         "parameters": [],
         "responses": {
@@ -5661,7 +5729,7 @@
                         }
                       ],
                       "default": "ordinary",
-                      "help": "The calculator covers ordinary entries for consumption and withdrawals from warehouse for consumption. Personal-use goods in a traveler's accompanied baggage, goods entered under a provision of chapter 98 and withdrawals from a foreign trade zone follow other rules: other rates, duties assessed on values that differ from one measure to another, or duties kept on goods admitted to a zone before a suspension. They are not supported: declared, the result gives no estimate. Without a declaration, an ordinary entry is assumed, and the result says so.",
+                      "help": "The calculator covers ordinary entries for consumption and withdrawals from warehouse for consumption. Personal-use goods in a traveler's accompanied baggage, goods entered under a provision of chapter 98 and withdrawals from a foreign trade zone follow other rules: other rates, duties assessed on values that differ from one measure to another, or duties kept on goods admitted to a zone before a suspension. They are not supported: declared, the result gives no estimate. Without a declaration, an ordinary entry is assumed.",
                       "name": "entry_regime",
                       "question": "Under which regime are these goods entered?",
                       "scope": "entry",

@@ -107,7 +107,8 @@ class Operations:
                 An informal entry pays a fixed fee the estimate does not calculate: it gives no
                 fees.
             facts: Answers to the questions of the facts catalogue (GET /v2/facts), by name. A
-                name outside the catalogue is said in warnings and never used.
+                name that is no question is refused, so that a typing error never gives a figure
+                on the ordinary case.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             include_fees: Count the entry fees (MPF, HMF) of a declaration of this product
@@ -282,7 +283,8 @@ class Operations:
                 An informal entry pays a fixed fee the estimate does not calculate: it gives no
                 fees.
             facts: Answers to the questions of the facts catalogue (GET /v2/facts), by name. A
-                name outside the catalogue is said in warnings and never used.
+                name that is no question is refused, so that a typing error never gives a figure
+                on the ordinary case.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             from_: First day of the period. Unset: the first edition the service holds.
@@ -318,10 +320,10 @@ class Operations:
     ) -> FactList:
         """List the questions an estimate may ask.
 
-        The facts catalogue: each question a measure may depend on, by the name to answer it
-        with in facts, its type, its choices and its ordinary case. An answer names the ones it
-        needs in missing, and those it rests on in facts. Needs the read permission; not
-        counted.
+        The questions that can change an answer today: each by the name to answer it with in
+        facts, its type, its choices and its ordinary case. An answer names the ones it needs in
+        missing, and those it rests on in facts. The example shows two of them; the answer lists
+        them all. Needs the read permission; not counted.
         """
         return self._request(
             "GET",
@@ -510,7 +512,8 @@ class AsyncOperations:
                 An informal entry pays a fixed fee the estimate does not calculate: it gives no
                 fees.
             facts: Answers to the questions of the facts catalogue (GET /v2/facts), by name. A
-                name outside the catalogue is said in warnings and never used.
+                name that is no question is refused, so that a typing error never gives a figure
+                on the ordinary case.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             include_fees: Count the entry fees (MPF, HMF) of a declaration of this product
@@ -685,7 +688,8 @@ class AsyncOperations:
                 An informal entry pays a fixed fee the estimate does not calculate: it gives no
                 fees.
             facts: Answers to the questions of the facts catalogue (GET /v2/facts), by name. A
-                name outside the catalogue is said in warnings and never used.
+                name that is no question is refused, so that a typing error never gives a figure
+                on the ordinary case.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             from_: First day of the period. Unset: the first edition the service holds.
@@ -721,10 +725,10 @@ class AsyncOperations:
     ) -> FactList:
         """List the questions an estimate may ask.
 
-        The facts catalogue: each question a measure may depend on, by the name to answer it
-        with in facts, its type, its choices and its ordinary case. An answer names the ones it
-        needs in missing, and those it rests on in facts. Needs the read permission; not
-        counted.
+        The questions that can change an answer today: each by the name to answer it with in
+        facts, its type, its choices and its ordinary case. An answer names the ones it needs in
+        missing, and those it rests on in facts. The example shows two of them; the answer lists
+        them all. Needs the read permission; not counted.
         """
         return await self._request(
             "GET",

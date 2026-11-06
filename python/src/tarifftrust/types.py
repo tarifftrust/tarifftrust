@@ -38,8 +38,9 @@ class BatchItem(_BatchItemRequired, total=False):
     pays a fixed fee the estimate does not calculate: it gives no fees.
     """
     facts: Mapping[str, int | float | Decimal | str | bool]
-    """Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
-    the catalogue is said in warnings and never used.
+    """Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is
+    no question is refused, so that a typing error never gives a figure on the ordinary
+    case.
     """
     freight: int | float | Decimal | str
     """International freight in US dollars: no duty on it, it adds to the landed cost."""
@@ -90,8 +91,9 @@ class LineInput(_LineInputRequired, total=False):
     the duty rate is given, and an amount only where the duty does not depend on the value.
     """
     facts: Mapping[str, int | float | Decimal | str | bool]
-    """Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
-    the catalogue is said in warnings and never used.
+    """Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is
+    no question is refused, so that a typing error never gives a figure on the ordinary
+    case.
     """
     preference: str | None
     """A trade agreement's symbol from the HTS special column (S for USMCA, KR for KORUS…; GET
@@ -140,6 +142,24 @@ class AgreementList(Model):
 
     source: str
     """Where the tariff that names them is published."""
+
+
+class AskedBy(Model):
+    """An official text that asks a question: read it to answer precisely."""
+
+    _fields: ClassVar[frozenset[str]] = frozenset(['heading', 'title', 'url'])
+    _required: ClassVar[frozenset[str]] = frozenset(['heading', 'title', 'url'])
+
+    heading: str | None
+    """The Chapter 99 heading, or the tariff line, whose text asks it; null for a regulation."""
+
+    title: str
+    """What it is, in words."""
+
+    url: str
+    """Where to read it: the heading's page, with its text and the note it cites, or the
+    official document of a notice read ahead of the tariff.
+    """
 
 
 class AuditedDeclaration(Model):
@@ -746,10 +766,16 @@ class FactChoice(Model):
 class FactDefinition(Model):
     """A question an estimate may ask about the goods or the declaration."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['choices', 'default', 'help', 'name', 'question', 'scope', 'type', 'unit'])
+    _fields: ClassVar[frozenset[str]] = frozenset(['asked_by', 'choices', 'default', 'help', 'name', 'question', 'scope', 'type', 'unit'])
     _required: ClassVar[frozenset[str]] = frozenset(['help', 'name', 'question', 'scope', 'type'])
-    _nested: ClassVar[dict[str, Any]] = {'choices': ['FactChoice']}
-    _defaults: ClassVar[dict[str, Any]] = {'choices': [], 'unit': ''}
+    _nested: ClassVar[dict[str, Any]] = {'asked_by': ['AskedBy'], 'choices': ['FactChoice']}
+    _defaults: ClassVar[dict[str, Any]] = {'asked_by': [], 'choices': [], 'unit': ''}
+
+    asked_by: list[AskedBy]
+    """The official texts that ask it today: the headings whose rules in service read it, or
+    the regulation of a fee. Empty for what depends on each product's own line (its rate,
+    its entry); an estimate names, in missing, those that ask it for its goods.
+    """
 
     choices: list[FactChoice]
     """For a choice: the values to choose from."""
@@ -773,7 +799,7 @@ class FactDefinition(Model):
 
     type: str
     """How it is answered: boolean (true or false), choice (one of choices), money (US
-    dollars), number, country (ISO code) or heading (a Chapter 99 heading).
+    dollars), number or country (ISO code).
     """
 
     unit: str
@@ -781,14 +807,14 @@ class FactDefinition(Model):
 
 
 class FactList(Model):
-    """The facts catalogue: every question an estimate may ask."""
+    """The questions an estimate may ask."""
 
     _fields: ClassVar[frozenset[str]] = frozenset(['facts'])
     _required: ClassVar[frozenset[str]] = frozenset(['facts'])
     _nested: ClassVar[dict[str, Any]] = {'facts': ['FactDefinition']}
 
     facts: list[FactDefinition]
-    """Every question of the catalogue."""
+    """The questions that can change an answer today."""
 
 
 class HistoryPoint(Model):
@@ -1122,8 +1148,12 @@ class Line(Model):
 class MissingField(Model):
     """What the service needs to give a figure."""
 
-    _fields: ClassVar[frozenset[str]] = frozenset(['choices', 'field', 'question', 'type', 'unit'])
+    _fields: ClassVar[frozenset[str]] = frozenset(['asked_by', 'choices', 'field', 'question', 'type', 'unit'])
     _required: ClassVar[frozenset[str]] = frozenset(['field', 'question', 'type'])
+    _nested: ClassVar[dict[str, Any]] = {'asked_by': ['AskedBy']}
+
+    asked_by: list[AskedBy] | None
+    """The official texts that ask it for these goods, to answer it precisely."""
 
     choices: list[Any] | None
     """The values a choice takes."""
@@ -1135,9 +1165,7 @@ class MissingField(Model):
     """What it asks, in words."""
 
     type: str
-    """The type of its value: number, money, boolean, choice, text, heading, country or
-    datetime.
-    """
+    """The type of its value: number, money, boolean, choice, text, country or datetime."""
 
     unit: str | None
     """The unit of a quantity."""

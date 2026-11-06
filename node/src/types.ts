@@ -41,6 +41,25 @@ export interface AgreementList {
 }
 
 /**
+ * An official text that asks a question: read it to answer precisely.
+ */
+export interface AskedBy {
+  /**
+   * The Chapter 99 heading, or the tariff line, whose text asks it; null for a regulation.
+   */
+  heading: string | null;
+  /**
+   * What it is, in words.
+   */
+  title: string;
+  /**
+   * Where to read it: the heading's page, with its text and the note it cites, or the official
+   * document of a notice read ahead of the tariff.
+   */
+  url: string;
+}
+
+/**
  * A saved declaration's answer, with the detail behind it.
  */
 export interface AuditedDeclaration {
@@ -362,8 +381,8 @@ export interface BatchItem {
    */
   entry_type?: "formal" | "informal";
   /**
-   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
-   * the catalogue is said in warnings and never used.
+   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is no
+   * question is refused, so that a typing error never gives a figure on the ordinary case.
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -897,8 +916,8 @@ export interface EstimateRequest {
    */
   entry_type?: "formal" | "informal";
   /**
-   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
-   * the catalogue is said in warnings and never used.
+   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is no
+   * question is refused, so that a typing error never gives a figure on the ordinary case.
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -986,6 +1005,12 @@ export interface FactChoice {
  */
 export interface FactDefinition {
   /**
+   * The official texts that ask it today: the headings whose rules in service read it, or the
+   * regulation of a fee. Empty for what depends on each product's own line (its rate, its
+   * entry); an estimate names, in missing, those that ask it for its goods.
+   */
+  asked_by?: AskedBy[];
+  /**
    * For a choice: the values to choose from.
    */
   choices?: FactChoice[];
@@ -1012,7 +1037,7 @@ export interface FactDefinition {
   scope: string;
   /**
    * How it is answered: boolean (true or false), choice (one of choices), money (US dollars),
-   * number, country (ISO code) or heading (a Chapter 99 heading).
+   * number or country (ISO code).
    */
   type: string;
   /**
@@ -1022,11 +1047,11 @@ export interface FactDefinition {
 }
 
 /**
- * The facts catalogue: every question an estimate may ask.
+ * The questions an estimate may ask.
  */
 export interface FactList {
   /**
-   * Every question of the catalogue.
+   * The questions that can change an answer today.
    */
   facts: FactDefinition[];
 }
@@ -1164,8 +1189,8 @@ export interface HistoryRequest {
    */
   entry_type?: "formal" | "informal";
   /**
-   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
-   * the catalogue is said in warnings and never used.
+   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is no
+   * question is refused, so that a typing error never gives a figure on the ordinary case.
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -1498,8 +1523,8 @@ export interface LineInput {
    */
   customs_value?: number | string | null;
   /**
-   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name outside
-   * the catalogue is said in warnings and never used.
+   * Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is no
+   * question is refused, so that a typing error never gives a figure on the ordinary case.
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -1534,6 +1559,10 @@ export interface LineInput {
  */
 export interface MissingField {
   /**
+   * The official texts that ask it for these goods, to answer it precisely.
+   */
+  asked_by?: AskedBy[] | null;
+  /**
    * The values a choice takes.
    */
   choices?: unknown[] | null;
@@ -1546,7 +1575,7 @@ export interface MissingField {
    */
   question: string;
   /**
-   * The type of its value: number, money, boolean, choice, text, heading, country or datetime.
+   * The type of its value: number, money, boolean, choice, text, country or datetime.
    */
   type: string;
   /**

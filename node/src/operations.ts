@@ -121,9 +121,10 @@ export abstract class Operations {
   /**
    * List the questions an estimate may ask.
    *
-   * The facts catalogue: each question a measure may depend on, by the name to answer it with
-   * in facts, its type, its choices and its ordinary case. An answer names the ones it needs in
-   * missing, and those it rests on in facts. Needs the read permission; not counted.
+   * The questions that can change an answer today: each by the name to answer it with in facts,
+   * its type, its choices and its ordinary case. An answer names the ones it needs in missing,
+   * and those it rests on in facts. The example shows two of them; the answer lists them all.
+   * Needs the read permission; not counted.
    */
   listFacts(options?: RequestOptions): Promise<FactList> {
     return this.request<FactList>({
