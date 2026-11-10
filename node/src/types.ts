@@ -184,8 +184,9 @@ export interface AuditedEstimate {
    */
   estimated_duty?: string | null;
   /**
-   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
-   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+   * each duty is a percentage, with or without a value; else the duties over the value, to 4
+   * places, null without a value. Null while a duty is withheld.
    */
   estimated_duty_rate?: string | null;
   /**
@@ -293,8 +294,9 @@ export interface AuditedLine {
    */
   estimated_duty?: string | null;
   /**
-   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
-   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+   * each duty is a percentage, else the duties over the value, to 4 places. Null while a duty
+   * is withheld.
    */
   estimated_duty_rate?: string | null;
   /**
@@ -455,8 +457,10 @@ export interface BatchRequest {
   items: BatchItem[];
   /**
    * Calculate with this publication of the rules instead of the one in service on that date:
-   * the data.publication_id of an earlier answer gives the same result again, as long as the
-   * engine has not changed.
+   * the data.publication_id of an earlier answer gives its rates and rules again, as long as
+   * the engine has not changed. What withholds an estimate today (an incident, an official
+   * notice not yet read, an exclusion from importation) still applies: a saved estimate alone
+   * keeps its result.
    */
   publication_id?: string | null;
 }
@@ -690,7 +694,9 @@ export interface EntryRequest {
    */
   entry_type?: "formal" | "informal";
   /**
-   * Answers that hold for the whole declaration (GET /v2/facts, scope entry or shipment).
+   * Answers that hold for every line of the declaration, by name (GET /v2/facts): a line's own
+   * answer comes first. Given here, mpf_exempt holds for the lines entered under an agreement,
+   * and hmf_exempt for the declaration.
    */
   facts?: Record<string, number | string | boolean>;
   /**
@@ -721,8 +727,10 @@ export interface EntryRequest {
   lines: LineInput[];
   /**
    * Calculate with this publication of the rules instead of the one in service on that date:
-   * the data.publication_id of an earlier answer gives the same result again, as long as the
-   * engine has not changed.
+   * the data.publication_id of an earlier answer gives its rates and rules again, as long as
+   * the engine has not changed. What withholds an estimate today (an incident, an official
+   * notice not yet read, an exclusion from importation) still applies: a saved estimate alone
+   * keeps its result.
    */
   publication_id?: string | null;
   /**
@@ -811,8 +819,9 @@ export interface Estimate {
    */
   estimated_duty?: string | null;
   /**
-   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
-   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+   * each duty is a percentage, with or without a value; else the duties over the value, to 4
+   * places, null without a value. Null while a duty is withheld.
    */
   estimated_duty_rate?: string | null;
   /**
@@ -962,8 +971,10 @@ export interface EstimateRequest {
   preference?: string | null;
   /**
    * Calculate with this publication of the rules instead of the one in service on that date:
-   * the data.publication_id of an earlier answer gives the same result again, as long as the
-   * engine has not changed.
+   * the data.publication_id of an earlier answer gives its rates and rules again, as long as
+   * the engine has not changed. What withholds an estimate today (an incident, an official
+   * notice not yet read, an exclusion from importation) still applies: a saved estimate alone
+   * keeps its result.
    */
   publication_id?: string | null;
   /**
@@ -1015,7 +1026,9 @@ export interface FactDefinition {
    */
   choices?: FactChoice[];
   /**
-   * The ordinary case, supposed when unanswered.
+   * The ordinary case, supposed when unanswered. For an amount, "customs_value": the whole
+   * customs value of the line; for a country, "origin": the origin of the line. Send a value,
+   * never these names.
    */
   default?: unknown;
   /**
@@ -1090,8 +1103,9 @@ export interface HistoryPoint {
    */
   estimated_duty?: string | null;
   /**
-   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
-   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+   * each duty is a percentage, with or without a value; else the duties over the value, to 4
+   * places, null without a value. Null while a duty is withheld.
    */
   estimated_duty_rate?: string | null;
   /**
@@ -1462,8 +1476,9 @@ export interface Line {
    */
   estimated_duty?: string | null;
   /**
-   * The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of
-   * the rates; null when a duty is not a percentage, or while a duty is withheld.
+   * The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+   * each duty is a percentage, else the duties over the value, to 4 places. Null while a duty
+   * is withheld.
    */
   estimated_duty_rate?: string | null;
   /**
@@ -1518,8 +1533,9 @@ export interface Line {
  */
 export interface LineInput {
   /**
-   * Customs value in US dollars: the transaction value declared, not a retail price. Unset: the
-   * duty rate is given, and an amount only where the duty does not depend on the value.
+   * Customs value in US dollars: the transaction value declared, not a retail price. A
+   * declaration's line asks for it, the fees resting on it: without it, the line gives no rate
+   * and no amount.
    */
   customs_value?: number | string | null;
   /**

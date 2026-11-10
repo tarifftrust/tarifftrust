@@ -451,7 +451,7 @@
                 "type": "null"
               }
             ],
-            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of the rates; null when a duty is not a percentage, or while a duty is withheld.",
+            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when each duty is a percentage, with or without a value; else the duties over the value, to 4 places, null without a value. Null while a duty is withheld.",
             "title": "Estimated Duty Rate"
           },
           "estimated_fees": {
@@ -745,7 +745,7 @@
                 "type": "null"
               }
             ],
-            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of the rates; null when a duty is not a percentage, or while a duty is withheld.",
+            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when each duty is a percentage, else the duties over the value, to 4 places. Null while a duty is withheld.",
             "title": "Estimated Duty Rate"
           },
           "facts": {
@@ -1174,7 +1174,7 @@
                 "type": "null"
               }
             ],
-            "description": "Calculate with this publication of the rules instead of the one in service on that date: the data.publication_id of an earlier answer gives the same result again, as long as the engine has not changed.",
+            "description": "Calculate with this publication of the rules instead of the one in service on that date: the data.publication_id of an earlier answer gives its rates and rules again, as long as the engine has not changed. What withholds an estimate today (an incident, an official notice not yet read, an exclusion from importation) still applies: a saved estimate alone keeps its result.",
             "title": "Publication Id"
           }
         },
@@ -1785,7 +1785,7 @@
                 }
               ]
             },
-            "description": "Answers that hold for the whole declaration (GET /v2/facts, scope entry or shipment).",
+            "description": "Answers that hold for every line of the declaration, by name (GET /v2/facts): a line's own answer comes first. Given here, mpf_exempt holds for the lines entered under an agreement, and hmf_exempt for the declaration.",
             "maxProperties": 100,
             "title": "Facts",
             "type": "object"
@@ -1854,7 +1854,7 @@
                 "type": "null"
               }
             ],
-            "description": "Calculate with this publication of the rules instead of the one in service on that date: the data.publication_id of an earlier answer gives the same result again, as long as the engine has not changed.",
+            "description": "Calculate with this publication of the rules instead of the one in service on that date: the data.publication_id of an earlier answer gives its rates and rules again, as long as the engine has not changed. What withholds an estimate today (an incident, an official notice not yet read, an exclusion from importation) still applies: a saved estimate alone keeps its result.",
             "title": "Publication Id"
           },
           "reference": {
@@ -2067,7 +2067,7 @@
                 "type": "null"
               }
             ],
-            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of the rates; null when a duty is not a percentage, or while a duty is withheld.",
+            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when each duty is a percentage, with or without a value; else the duties over the value, to 4 places, null without a value. Null while a duty is withheld.",
             "title": "Estimated Duty Rate"
           },
           "estimated_fees": {
@@ -2465,7 +2465,7 @@
                 "type": "null"
               }
             ],
-            "description": "Calculate with this publication of the rules instead of the one in service on that date: the data.publication_id of an earlier answer gives the same result again, as long as the engine has not changed.",
+            "description": "Calculate with this publication of the rules instead of the one in service on that date: the data.publication_id of an earlier answer gives its rates and rules again, as long as the engine has not changed. What withholds an estimate today (an incident, an official notice not yet read, an exclusion from importation) still applies: a saved estimate alone keeps its result.",
             "title": "Publication Id"
           },
           "quantities": {
@@ -2597,7 +2597,7 @@
             "type": "array"
           },
           "default": {
-            "description": "The ordinary case, supposed when unanswered.",
+            "description": "The ordinary case, supposed when unanswered. For an amount, \"customs_value\": the whole customs value of the line; for a country, \"origin\": the origin of the line. Send a value, never these names.",
             "title": "Default"
           },
           "help": {
@@ -2764,7 +2764,7 @@
                 "type": "null"
               }
             ],
-            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of the rates; null when a duty is not a percentage, or while a duty is withheld.",
+            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when each duty is a percentage, with or without a value; else the duties over the value, to 4 places, null without a value. Null while a duty is withheld.",
             "title": "Estimated Duty Rate"
           },
           "estimated_fees": {
@@ -3676,7 +3676,7 @@
                 "type": "null"
               }
             ],
-            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum of the rates; null when a duty is not a percentage, or while a duty is withheld.",
+            "description": "The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when each duty is a percentage, else the duties over the value, to 4 places. Null while a duty is withheld.",
             "title": "Estimated Duty Rate"
           },
           "facts": {
@@ -3822,7 +3822,7 @@
                 "type": "null"
               }
             ],
-            "description": "Customs value in US dollars: the transaction value declared, not a retail price. Unset: the duty rate is given, and an amount only where the duty does not depend on the value.",
+            "description": "Customs value in US dollars: the transaction value declared, not a retail price. A declaration's line asks for it, the fees resting on it: without it, the line gives no rate and no amount.",
             "examples": [
               "10000"
             ],
@@ -6295,7 +6295,7 @@
                     "as_of": "2026-11-04",
                     "audit": {
                       "base_rate": "16.5%",
-                      "engine_version": "3.0",
+                      "engine_version": "3.1",
                       "knowledge_at": "2026-11-02T12:56:15.971811+00:00",
                       "publication_checksum": "7bd7a8f9b49b87a4ebd71cd4a8eb5b1ffe8b3d159eaf135c55aa3057c5ea3272",
                       "sources": [
@@ -6497,7 +6497,7 @@
                   "checked_at": "2026-11-04T12:50:42.380Z",
                   "covered_from": "2026-09-28",
                   "edition": "2026 HTS Revision 22",
-                  "engine_version": "3.0",
+                  "engine_version": "3.1",
                   "incidents": [],
                   "publication_id": "9bcbda8e-4e78-4d35-9758-f996ab2db551",
                   "stale": false,

@@ -87,8 +87,9 @@ class _LineInputRequired(TypedDict):
 class LineInput(_LineInputRequired, total=False):
     """One line of a declaration."""
     customs_value: int | float | Decimal | str | None
-    """Customs value in US dollars: the transaction value declared, not a retail price. Unset:
-    the duty rate is given, and an amount only where the duty does not depend on the value.
+    """Customs value in US dollars: the transaction value declared, not a retail price. A
+    declaration's line asks for it, the fees resting on it: without it, the line gives no
+    rate and no amount.
     """
     facts: Mapping[str, int | float | Decimal | str | bool]
     """Answers to the questions of the facts catalogue (GET /v2/facts), by name. A name that is
@@ -273,8 +274,9 @@ class AuditedEstimate(Model):
     """All the duties, in US dollars. Null is unknown, never zero."""
 
     estimated_duty_rate: str | None
-    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
-    of the rates; null when a duty is not a percentage, or while a duty is withheld.
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+    each duty is a percentage, with or without a value; else the duties over the value, to 4
+    places, null without a value. Null while a duty is withheld.
     """
 
     estimated_fees: str | None
@@ -369,8 +371,9 @@ class AuditedLine(Model):
     """All the duties, in US dollars. Null is unknown, never zero."""
 
     estimated_duty_rate: str | None
-    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
-    of the rates; null when a duty is not a percentage, or while a duty is withheld.
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+    each duty is a percentage, else the duties over the value, to 4 places. Null while a
+    duty is withheld.
     """
 
     facts: dict[str, Any] | None
@@ -680,8 +683,9 @@ class Estimate(Model):
     """All the duties, in US dollars. Null is unknown, never zero."""
 
     estimated_duty_rate: str | None
-    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
-    of the rates; null when a duty is not a percentage, or while a duty is withheld.
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+    each duty is a percentage, with or without a value; else the duties over the value, to 4
+    places, null without a value. Null while a duty is withheld.
     """
 
     estimated_fees: str | None
@@ -781,7 +785,10 @@ class FactDefinition(Model):
     """For a choice: the values to choose from."""
 
     default: Any
-    """The ordinary case, supposed when unanswered."""
+    """The ordinary case, supposed when unanswered. For an amount, "customs_value": the whole
+    customs value of the line; for a country, "origin": the origin of the line. Send a
+    value, never these names.
+    """
 
     help: str
     """What it means, and how to answer it."""
@@ -848,8 +855,9 @@ class HistoryPoint(Model):
     """All the duties, in US dollars. Null is unknown, never zero."""
 
     estimated_duty_rate: str | None
-    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
-    of the rates; null when a duty is not a percentage, or while a duty is withheld.
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+    each duty is a percentage, with or without a value; else the duties over the value, to 4
+    places, null without a value. Null while a duty is withheld.
     """
 
     estimated_fees: str | None
@@ -1102,8 +1110,9 @@ class Line(Model):
     """All the duties, in US dollars. Null is unknown, never zero."""
 
     estimated_duty_rate: str | None
-    """The duties as a fraction of the customs value: 0.365 is 36.5%. Without a value, the sum
-    of the rates; null when a duty is not a percentage, or while a duty is withheld.
+    """The duties as a fraction of the customs value: 0.365 is 36.5%. The sum of the rates when
+    each duty is a percentage, else the duties over the value, to 4 places. Null while a
+    duty is withheld.
     """
 
     facts: dict[str, Any] | None

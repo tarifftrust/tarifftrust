@@ -122,8 +122,10 @@ class Operations:
                 for KORUS…; GET /v2/agreements). Giving it declares that the goods meet its
                 rules of origin and that you hold the proof.
             publication_id: Calculate with this publication of the rules instead of the one in
-                service on that date: the data.publication_id of an earlier answer gives the
-                same result again, as long as the engine has not changed.
+                service on that date: the data.publication_id of an earlier answer gives its
+                rates and rules again, as long as the engine has not changed. What withholds an
+                estimate today (an incident, an official notice not yet read, an exclusion from
+                importation) still applies: a saved estimate alone keeps its result.
             quantities: Quantities in the units a duty counts (kg, l, item, dozen, pair,
                 proof_liter…), nonnegative. An answer names the quantity it needs in missing
                 ("quantities.kg").
@@ -168,8 +170,10 @@ class Operations:
         Args:
             items: The products, each calculated on its own.
             publication_id: Calculate with this publication of the rules instead of the one in
-                service on that date: the data.publication_id of an earlier answer gives the
-                same result again, as long as the engine has not changed.
+                service on that date: the data.publication_id of an earlier answer gives its
+                rates and rules again, as long as the engine has not changed. What withholds an
+                estimate today (an incident, an official notice not yet read, an exclusion from
+                importation) still applies: a saved estimate alone keeps its result.
             idempotency_key: Makes a retry of this call safe; a new one is generated for each
                 call otherwise.
         """
@@ -214,8 +218,9 @@ class Operations:
             entry_type: A formal entry pays the merchandise processing fee (MPF) on its value.
                 An informal entry pays a fixed fee the estimate does not calculate: it gives no
                 fees.
-            facts: Answers that hold for the whole declaration (GET /v2/facts, scope entry or
-                shipment).
+            facts: Answers that hold for every line of the declaration, by name (GET /v2/facts):
+                a line's own answer comes first. Given here, mpf_exempt holds for the lines
+                entered under an agreement, and hmf_exempt for the declaration.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             include_fees: Count the entry fees (MPF, HMF) of the declaration.
@@ -223,8 +228,10 @@ class Operations:
                 landed cost.
             label: A name for the saved estimate; needs save.
             publication_id: Calculate with this publication of the rules instead of the one in
-                service on that date: the data.publication_id of an earlier answer gives the
-                same result again, as long as the engine has not changed.
+                service on that date: the data.publication_id of an earlier answer gives its
+                rates and rules again, as long as the engine has not changed. What withholds an
+                estimate today (an incident, an official notice not yet read, an exclusion from
+                importation) still applies: a saved estimate alone keeps its result.
             reference: Your reference for the declaration.
             save: Save the estimate: only a saved estimate keeps its detail, is reported, and is
                 notified if a rate proves wrong. An answer without a figure is not saved. Send
@@ -527,8 +534,10 @@ class AsyncOperations:
                 for KORUS…; GET /v2/agreements). Giving it declares that the goods meet its
                 rules of origin and that you hold the proof.
             publication_id: Calculate with this publication of the rules instead of the one in
-                service on that date: the data.publication_id of an earlier answer gives the
-                same result again, as long as the engine has not changed.
+                service on that date: the data.publication_id of an earlier answer gives its
+                rates and rules again, as long as the engine has not changed. What withholds an
+                estimate today (an incident, an official notice not yet read, an exclusion from
+                importation) still applies: a saved estimate alone keeps its result.
             quantities: Quantities in the units a duty counts (kg, l, item, dozen, pair,
                 proof_liter…), nonnegative. An answer names the quantity it needs in missing
                 ("quantities.kg").
@@ -573,8 +582,10 @@ class AsyncOperations:
         Args:
             items: The products, each calculated on its own.
             publication_id: Calculate with this publication of the rules instead of the one in
-                service on that date: the data.publication_id of an earlier answer gives the
-                same result again, as long as the engine has not changed.
+                service on that date: the data.publication_id of an earlier answer gives its
+                rates and rules again, as long as the engine has not changed. What withholds an
+                estimate today (an incident, an official notice not yet read, an exclusion from
+                importation) still applies: a saved estimate alone keeps its result.
             idempotency_key: Makes a retry of this call safe; a new one is generated for each
                 call otherwise.
         """
@@ -619,8 +630,9 @@ class AsyncOperations:
             entry_type: A formal entry pays the merchandise processing fee (MPF) on its value.
                 An informal entry pays a fixed fee the estimate does not calculate: it gives no
                 fees.
-            facts: Answers that hold for the whole declaration (GET /v2/facts, scope entry or
-                shipment).
+            facts: Answers that hold for every line of the declaration, by name (GET /v2/facts):
+                a line's own answer comes first. Given here, mpf_exempt holds for the lines
+                entered under an agreement, and hmf_exempt for the declaration.
             freight: International freight in US dollars: no duty on it, it adds to the landed
                 cost.
             include_fees: Count the entry fees (MPF, HMF) of the declaration.
@@ -628,8 +640,10 @@ class AsyncOperations:
                 landed cost.
             label: A name for the saved estimate; needs save.
             publication_id: Calculate with this publication of the rules instead of the one in
-                service on that date: the data.publication_id of an earlier answer gives the
-                same result again, as long as the engine has not changed.
+                service on that date: the data.publication_id of an earlier answer gives its
+                rates and rules again, as long as the engine has not changed. What withholds an
+                estimate today (an incident, an official notice not yet read, an exclusion from
+                importation) still applies: a saved estimate alone keeps its result.
             reference: Your reference for the declaration.
             save: Save the estimate: only a saved estimate keeps its detail, is reported, and is
                 notified if a rate proves wrong. An answer without a figure is not saved. Send
