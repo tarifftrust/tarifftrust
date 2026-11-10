@@ -1,6 +1,6 @@
 [project]
 name = "tarifftrust"
-version = "0.3.0"
+version = "0.3.1"
 description = "Official Python client for the TariffTrust API: every US import duty and fee for an HTS code, an origin and a value, each with its official source."
 readme = "README.md"
 requires-python = ">=3.10"
