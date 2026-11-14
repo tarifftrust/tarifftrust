@@ -67,7 +67,9 @@ def main(path):
     print(f"Duty: {entry.estimated_duty}  Fees: {entry.estimated_fees}")
     print(f"Landed cost: {entry.estimated_landed_cost}")
     for sku, status, duty, unit in unit_costs(read_order(path), entry):
-        print(f"  {sku} ({status}): duty {duty or 'unknown'}, per unit {unit or 'unknown'}")
+        # A duty of 0.00 is known: only None is unknown.
+        shown = ["unknown" if amount is None else amount for amount in (duty, unit)]
+        print(f"  {sku} ({status}): duty {shown[0]}, per unit {shown[1]}")
     for line in entry.lines:
         for item in line.missing or []:
             print(f"To send for {line.reference}: {item.question} ({item.field})")

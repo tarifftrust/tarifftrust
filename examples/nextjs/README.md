@@ -9,4 +9,5 @@ TARIFFTRUST_API_KEY=tarifftrust_... npm run dev
 ```
 
 Then open http://localhost:3000. The package has no dependency and works in any server-side runtime
-with `fetch`. Never import it into a client component: that would ship your key to the browser.
+with `fetch`. Never import it into a client component, and never give the key a `NEXT_PUBLIC_` name:
+Next.js writes those variables into the JavaScript it sends to the browser.

@@ -24,7 +24,7 @@ result = client.estimate(hts="6109.10.00.12", origin="CN", customs_value="10000"
 
 print(result.status, result.estimated_duty)
 for duty in result.duties or []:
-    print(duty.name, duty.rate, duty.amount, duty.source.url)
+    print(duty.name, duty.rate, duty.amount, duty.source.url if duty.source else None)
 ```
 
 Read `status` first, then the amounts: decimal strings in US dollars, ready for `Decimal`.
