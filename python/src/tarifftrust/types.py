@@ -785,9 +785,11 @@ class FactDefinition(Model):
     """For a choice: the values to choose from."""
 
     default: Any
-    """The ordinary case, supposed when unanswered. For an amount, "customs_value": the whole
-    customs value of the line; for a country, "origin": the origin of the line. Send a
-    value, never these names.
+    """The ordinary case, supposed when unanswered; null when the question has none of its own.
+    It is then asked, except for goods whose HTS line a rule in service takes to be what the
+    question is about: the estimate supposes the answer there, and says so in facts. For an
+    amount, "customs_value": the whole customs value of the line; for a country, "origin":
+    the origin of the line. Send a value, never these names.
     """
 
     help: str

@@ -2597,7 +2597,7 @@
             "type": "array"
           },
           "default": {
-            "description": "The ordinary case, supposed when unanswered. For an amount, \"customs_value\": the whole customs value of the line; for a country, \"origin\": the origin of the line. Send a value, never these names.",
+            "description": "The ordinary case, supposed when unanswered; null when the question has none of its own. It is then asked, except for goods whose HTS line a rule in service takes to be what the question is about: the estimate supposes the answer there, and says so in facts. For an amount, \"customs_value\": the whole customs value of the line; for a country, \"origin\": the origin of the line. Send a value, never these names.",
             "title": "Default"
           },
           "help": {
@@ -6295,7 +6295,7 @@
                     "as_of": "2026-11-04",
                     "audit": {
                       "base_rate": "16.5%",
-                      "engine_version": "3.1",
+                      "engine_version": "3.3",
                       "knowledge_at": "2026-11-02T12:56:15.971811+00:00",
                       "publication_checksum": "7bd7a8f9b49b87a4ebd71cd4a8eb5b1ffe8b3d159eaf135c55aa3057c5ea3272",
                       "sources": [
@@ -6497,7 +6497,7 @@
                   "checked_at": "2026-11-04T12:50:42.380Z",
                   "covered_from": "2026-09-28",
                   "edition": "2026 HTS Revision 22",
-                  "engine_version": "3.1",
+                  "engine_version": "3.3",
                   "incidents": [],
                   "publication_id": "9bcbda8e-4e78-4d35-9758-f996ab2db551",
                   "stale": false,
